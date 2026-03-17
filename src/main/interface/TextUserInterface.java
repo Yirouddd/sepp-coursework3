@@ -1,7 +1,7 @@
 /**
  * TextUserInterface.java
  */
-public class TextUserInterface {
+public interface TextUserInterface {
     public String getInput(String inputPrompt) {
         // Implementation for getting user input
         return ""; // Placeholder return value

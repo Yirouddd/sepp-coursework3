@@ -26,10 +26,6 @@ public class UserController {
         // Implementation for editing user preferences
     }
 
-    public void editPreferences(){
-        // Implementation for editing user preferences
-    }
-
     private void addUser(User user) {
         // Implementation for adding a user to the system
     }
@@ -42,4 +38,5 @@ public class UserController {
         // Implementation for getting the entertainment provider that owns a specific event
         return null; // Placeholder return value
     }
+
 }

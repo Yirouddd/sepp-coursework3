@@ -1,8 +1,11 @@
+package controller;
+
+import java.util.Scanner;
+
 /**
  * MenuController.java
  */
 public class MenuController {
-
     public enum GuestMenuOptions {
         LOGIN
     }
@@ -32,6 +35,8 @@ public class MenuController {
         VIEW_PERFORMANCE,
         SPONSOR_PERFORMANCE
     }
+
+    UserController userController;
 
     public void mainMenu() {
         // Implementation for the main menu of the application
@@ -75,7 +80,7 @@ public class MenuController {
                 // Implementation for reviewing a performance
                 break;
             case 5:
-                editPreferences();
+                userController.editPreferences();
                 break;
             case 6:
                 // Handle book event

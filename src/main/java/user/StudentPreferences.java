@@ -1,4 +1,4 @@
-package main.user;
+package user;
 public class StudentPreferences {
     public boolean preferMusicEvents;
     public boolean preferTheatreEvents;

@@ -1,3 +1,5 @@
+package object;
+
 /**
  * Event class
  */

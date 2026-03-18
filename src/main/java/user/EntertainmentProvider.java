@@ -1,3 +1,5 @@
+package user;
+
 /**
  * A class representing an entertainment provider.
  */

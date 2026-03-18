@@ -1,3 +1,5 @@
+package user;
+
 /**
  * Student class represents a student with a name and a phoneNumber.
  */

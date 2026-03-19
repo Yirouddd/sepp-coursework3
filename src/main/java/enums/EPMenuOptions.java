@@ -1,3 +1,4 @@
+package enums;
 /**
  * Enumeration of menu options available to entertainment provider.
  */

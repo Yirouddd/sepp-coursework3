@@ -6,10 +6,10 @@ public interface View {
 
     /**
      * Gets input from the user with a prompt message
-     * @param inputPrompt the message to display to the user
+     *
      * @return the user's input as a String
      */
-    public String getInput(String inputPrompt);
+    public String getInput();
 
     /**
      * Displays a success message to the user

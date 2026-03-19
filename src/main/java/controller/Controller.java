@@ -1,5 +1,11 @@
 package controller;
 
+import interface1.View;
+import user.AdminStaff;
+import user.EntertainmentProvider;
+import user.Student;
+import user.User;
+
 import java.util.Collection;
 
 /**
@@ -10,6 +16,7 @@ import java.util.Collection;
 public abstract class Controller {
 
   protected User currentUser;
+  View view;
 
   /**
    * Constructs a Controller for the current user.
@@ -61,7 +68,7 @@ public abstract class Controller {
    */
 
   private boolean checkCurrentUserIsEntertainmentProvider() {
-    return currentUser instanceof EntertainmentProvider;
+    return false;
   }
 
   /**

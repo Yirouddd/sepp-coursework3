@@ -1,3 +1,7 @@
+package object;
+
+import enums.PerdformanceStatus;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -21,7 +25,7 @@ public class Performance {
     private double sponsoredAmount;
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
-    private PerdformanceStatus status;
+    PerdformanceStatus status;
 
     public Performance(long performanceId, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performersNames, String venueAddress, int duration) {
         this.performanceId = performanceId;

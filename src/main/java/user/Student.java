@@ -1,4 +1,6 @@
 package user;
+import object.Booking;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -36,5 +38,6 @@ public class Student extends User {
   public List<Booking> addBooking(Booking booking) {
     assert booking != null : "Non-existent booking cannot be added.";
     bookings.add(booking);
+      return List.of();
   }
 }

@@ -1,3 +1,5 @@
+package object;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -21,7 +23,7 @@ public class Performance {
     private double sponsoredAmount;
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
-    private PerdformanceStatus status;
+    PerformanceStatus status;
 
     public Performance(long performanceId, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performersNames, String venueAddress, int duration) {
         this.performanceId = performanceId;

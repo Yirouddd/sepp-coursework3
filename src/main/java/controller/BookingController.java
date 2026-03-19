@@ -1,12 +1,15 @@
 package controller;
 
+import object.Booking;
+import object.Performance;
+
 /**
  * BookingController.java
  */
 public class BookingController {
     //main.user.StudentPreferences studentPreferences;
 
-    public static final long nextBookingNumber = "data.txt";
+    private long nextBookingNumber;
 
     public void bookPerformance() {
         // Implementation for booking of performance

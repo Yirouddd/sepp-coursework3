@@ -1,5 +1,7 @@
 package user;
 
+import object.Event;
+
 /**
  * A class representing an entertainment provider.
  */

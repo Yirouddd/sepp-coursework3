@@ -68,7 +68,7 @@ public abstract class Controller {
    *         false otherwise
    */
 
-  private boolean checkCurrentUserIsEntertainmentProvider() {
+  protected boolean checkCurrentUserIsEntertainmentProvider() {
     return currentUser instanceof EntertainmentProvider;
   }
 

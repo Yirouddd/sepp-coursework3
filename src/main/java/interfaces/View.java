@@ -1,4 +1,4 @@
-package interface1;
+package interfaces;
 
 import java.util.Collection;
 
@@ -9,7 +9,7 @@ public interface View {
      *
      * @return the user's input as a String
      */
-    public String getInput();
+    public String getInput(String inputPrompt);
 
     /**
      * Displays a success message to the user

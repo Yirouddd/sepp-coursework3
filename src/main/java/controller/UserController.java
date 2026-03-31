@@ -1,10 +1,12 @@
 package controller;
 
+import interfaces.TextUserInterface;
+import user.Student;
 import user.User;
 import user.EntertainmentProvider;
 import user.StudentPreferences;
 
-import interface1.View;
+import interfaces.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +19,20 @@ public class UserController extends Controller {
 
     public static final String PREREGISTERED_USERS_FILE_PATH = "data/preregistered_users.txt";
     public static final String PREREGISTERED_ADMIN_FILE_PATH = "data/preregistered_admins.txt";
+    private User currentUser;
+    private View view;
 
-    private List<User> users;
-    private StudentPreferences studentPreferences;
-
+    /**
+     * Constructs a Controller for the current user.
+     *
+     * @param currentUser - the currently logged in user
+     * @param view
+     */
     public UserController(User currentUser, View view) {
         super(currentUser, view);
-        this.users = new ArrayList<>();
-        this.studentPreferences = new StudentPreferences();
+        this.currentUser = currentUser;
+        this.view = view;
+
     }
 
     public void login() {
@@ -46,11 +54,12 @@ public class UserController extends Controller {
     }
 
     public void editPreferences() {
-
         if (!checkCurrentUserIsStudent()) {
             view.displayError("Only students can edit preferences");
             return;
         }
+
+        Student student = (Student) currentUser;
 
         while (true) {
             String input = view.getInput("\nSelect up to 3 preferences from: music, theatre, dance, movie, sports \n"
@@ -69,7 +78,7 @@ public class UserController extends Controller {
                 String p = pref.trim().toLowerCase();
 
                 if (!(p.equals("music") || p.equals("theatre") || p.equals("dance")
-                        || p.equals("movie") || p.equals("sports"))) {
+                        || p.equals("movie") || p.equals("sport") || p.equals("game"))) {
                     view.displayError("Invalid preference: " + p + ". Please try again.");
                     isValid = false;
                     break;
@@ -88,7 +97,7 @@ public class UserController extends Controller {
                 continue;
             }
 
-            studentPreferences.updatePreferences(input);
+            student.getStudentPreferences().updatePreferences(input);
             view.displaySuccess("Preferences updated.");
             return;
         }
@@ -107,5 +116,4 @@ public class UserController extends Controller {
         // event
         return null; // Placeholder return value
     }
-
 }

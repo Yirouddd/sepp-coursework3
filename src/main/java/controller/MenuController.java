@@ -4,6 +4,9 @@ import enums.GuestMenuOptions;
 import enums.StudentMenuOptions;
 import enums.AdminMenuOptions;
 import enums.EPMenuOptions;
+import interfaces.TextUserInterface;
+import interfaces.View;
+import user.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +22,7 @@ public class MenuController extends Controller {
     private BookingController bookingController;
 
     public MenuController(User currentUser, View view, UserController userController,
-            EventPerformanceController eventPerformanceController, BookingController bookingController) {
+                          EventPerformanceController eventPerformanceController, BookingController bookingController) {
         super(currentUser, view);
         this.userController = userController;
         this.eventPerformanceController = eventPerformanceController;
@@ -42,6 +45,7 @@ public class MenuController extends Controller {
 
     // handles the guest menu
     private boolean handleGuestMainMenu() {
+        View view = new TextUserInterface();
         // Implementation for handling the main menu options for a guest user
         Collection<String> options = new ArrayList<>();
 
@@ -66,6 +70,7 @@ public class MenuController extends Controller {
     }
 
     private boolean handleStudentMainMenu() {
+        View view = new TextUserInterface();
 
         Collection<String> options = new ArrayList<>();
         for (StudentMenuOptions option : StudentMenuOptions.values()) {
@@ -104,6 +109,7 @@ public class MenuController extends Controller {
     }
 
     private boolean handleEntertainmentProviderMainMenu() {
+        View view = new TextUserInterface();
         // Implementation for handling the main menu options for a staff user
         Collection<String> options = new ArrayList<>();
         for (EPMenuOptions option : EPMenuOptions.values()) {
@@ -135,6 +141,7 @@ public class MenuController extends Controller {
     }
 
     private boolean handleAdminStaffMainMenu() {
+        View view = new TextUserInterface();
         // Implementation for handling the main menu options for an admin staff user
         Collection<String> options = new ArrayList<>();
         for (AdminMenuOptions option : AdminMenuOptions.values()) {

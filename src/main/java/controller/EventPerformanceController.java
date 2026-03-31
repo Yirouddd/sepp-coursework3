@@ -1,9 +1,30 @@
 package controller;
 
+import user.User;
 import object.Event;
 import object.Performance;
 
-public class EventPerformanceController {
+import interface1.View;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class EventPerformanceController extends Controller {
+
+    private long nextEventID;
+    private long nextPerformanceID;
+
+    private List<Event> events;
+    private List<Performance> performances;
+
+    public EventPerformanceController(User currentUser, View view) {
+
+        super(currentUser, view);
+        this.nextEventID = 1;
+        this.nextPerformanceID = 1;
+        this.events = new ArrayList<>();
+        this.performances = new ArrayList<>();
+    }
 
     public Event createEvent() {
 
@@ -22,7 +43,7 @@ public class EventPerformanceController {
 
     }
 
-    private boolean checkIfSponsorshipPossible(Performance performance, int amount){
+    private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
 
         return false;
     }
@@ -31,25 +52,25 @@ public class EventPerformanceController {
 
     }
 
-    private void addEvent(Event e){
+    private void addEvent(Event e) {
 
     }
 
-    private void addPerformance(Performance p){
+    private void addPerformance(Performance p) {
 
     }
 
-    private Event getEventByID(long eventID){
+    private Event getEventByID(long eventID) {
 
         return null;
     }
 
-    private Event getEventByTitle(String title){
+    private Event getEventByTitle(String title) {
 
         return null;
     }
 
-    private Performance getPerformanceById(long performanceID){
+    private Performance getPerformanceByID(long performanceID) {
 
         return null;
     }

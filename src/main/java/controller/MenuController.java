@@ -1,109 +1,164 @@
 package controller;
 
-import java.util.Scanner;
+import enums.GuestMenuOptions;
+import enums.StudentMenuOptions;
+import enums.AdminMenuOptions;
+import enums.EPMenuOptions;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- * MenuController.java
+ * MenuController handles the display of the menus and user interaction with the
+ * system.
  */
-public class MenuController {
-    public enum GuestMenuOptions {
-        LOGIN
+public class MenuController extends Controller {
+
+    private UserController userController;
+    private EventPerformanceController eventPerformanceController;
+    private BookingController bookingController;
+
+    public MenuController(User currentUser, View view, UserController userController,
+            EventPerformanceController eventPerformanceController, BookingController bookingController) {
+        super(currentUser, view);
+        this.userController = userController;
+        this.eventPerformanceController = eventPerformanceController;
+        this.bookingController = bookingController;
     }
 
-    public enum StudentMenuOptions {
-        LOGOUT,
-        SEARCH_FOR_PERFORMANCES,
-        VIEW_PERFORMANCE,
-        REVIEW_PERFORMANCE,
-        EDIT_PREFERENCES,
-        BOOK_EVENT,
-        CANCEL_BOOKING
-    }
-
-    public enum EPMenuOptions {
-        LOGOUT,
-        SEARCH_FOR_PERFORMANCES,
-        VIEW_PERFORMANCE,
-        REGISTER_EP,
-        CREATE_EVENT,
-        CANCEL_PERFORMANCE
-    }
-
-    public enum AdminMenuOptions {
-        LOGOUT,
-        SEARCH_FOR_PERFORMANCES,
-        VIEW_PERFORMANCE,
-        SPONSOR_PERFORMANCE
-    }
-
-    UserController userController;
-
+    // main Menu decides which menu to show depend on the current user role.
     public void mainMenu() {
         // Implementation for the main menu of the application
+        if (checkCurrentUserIsGuest()) {
+            handleGuestMainMenu();
+        } else if (checkCurrentUserIsStudent()) {
+            handleStudentMainMenu();
+        } else if (checkCurrentUserIsAdmin()) {
+            handleAdminStaffMainMenu();
+        } else if (checkCurrentUserIsEntertainmentProvider()) {
+            handleEntertainmentProviderMainMenu();
+        }
     }
 
+    // handles the guest menu
     private boolean handleGuestMainMenu() {
         // Implementation for handling the main menu options for a guest user
-        return false; // Placeholder return value
+        Collection<String> options = new ArrayList<>();
+
+        for (GuestMenuOptions option : GuestMenuOptions.values()) {
+            options.add(option.name());
+        }
+
+        int choice = selectFromMenu(options);
+
+        switch (GuestMenuOptions.values()[choice]) {
+            case LOGIN:
+                userController.login();
+                // stay in the menu after login
+                return false;
+            case REGISTER_EP:
+                userController.registerEntertainmentProvider();
+                return false;
+            default:
+                view.displayError("Invalid option.");
+                return false;
+        }
     }
 
     private boolean handleStudentMainMenu() {
-        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("\n=== Student Menu ===");
-        System.out.println("1. Logout");
-        System.out.println("2. Search for Performances");
-        System.out.println("3. View Performance");
-        System.out.println("4. Review Performance");
-        System.out.println("5. Edit Preferences");
-        System.out.println("6. Book Event");
-        System.out.println("7. Cancel Booking");
-        System.out.print("Please select an option: ");
-
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
-
-        switch (choice) {
-            case 1:
-                System.out.println("You have been logged out.");
-                return true; // Exit to main menu
-            case 2:
-                // Handle search for performances
-                // Implementation for searching performances
-                break;
-            case 3:
-                // Handle view performance
-                // Implementation for viewing performance details
-                break;
-            case 4:
-                // Handle review performance
-                // Implementation for reviewing a performance
-                break;
-            case 5:
-                userController.editPreferences();
-                break;
-            case 6:
-                // Handle book event
-                // Implementation for booking an event
-                break;
-            case 7:
-                // Handle cancel booking
-                // Implementation for canceling a booking
-                break;
-            default:
-                System.out.println("Invalid option. Please try again.");
+        Collection<String> options = new ArrayList<>();
+        for (StudentMenuOptions option : StudentMenuOptions.values()) {
+            options.add(option.name());
         }
-    
-        return false; // Placeholder return value
+
+        int choice = selectFromMenu(options);
+
+        switch (StudentMenuOptions.values()[choice]) {
+            case LOGOUT:
+                userController.logout();
+                // return to guest menu after logout
+                return true;
+            case SEARCH_FOR_PERFORMANCES:
+                eventPerformanceController.searchforPerformances();
+                return false;
+            case VIEW_PERFORMANCE:
+                eventPerformanceController.viewPerformance();
+                return false;
+            case REVIEW_PERFORMANCE:
+                bookingController.reviewPerformance();
+                return false;
+            case EDIT_PREFERENCES:
+                userController.editPreferences();
+                return false;
+            case BOOK_EVENT:
+                bookingController.bookPerformance();
+                return false;
+            case CANCEL_BOOKING:
+                bookingController.cancelBooking();
+                return false;
+            default:
+                view.displayError("Invalid option.");
+                return false;
+        }
     }
 
-    private boolean handleStaffMainMenu() {
+    private boolean handleEntertainmentProviderMainMenu() {
         // Implementation for handling the main menu options for a staff user
-        return false; // Placeholder return value
+        Collection<String> options = new ArrayList<>();
+        for (EPMenuOptions option : EPMenuOptions.values()) {
+            options.add(option.name());
+        }
+        int choice = selectFromMenu(options);
+
+        switch (EPMenuOptions.values()[choice]) {
+            case LOGOUT:
+                userController.logout();
+                // return to guest menu after logout
+                return true;
+            case SEARCH_FOR_PERFORMANCES:
+                eventPerformanceController.searchforPerformances();
+                return false;
+            case VIEW_PERFORMANCE:
+                eventPerformanceController.viewPerformance();
+                return false;
+            case CREATE_EVENT:
+                eventPerformanceController.createEvent();
+                return false;
+            case CANCEL_PERFORMANCE:
+                eventPerformanceController.cancelPerformance();
+                return false;
+            default:
+                view.displayError("Invalid option.");
+                return false;
+        }
     }
 
     private boolean handleAdminStaffMainMenu() {
         // Implementation for handling the main menu options for an admin staff user
-        return false; // Placeholder return value
+        Collection<String> options = new ArrayList<>();
+        for (AdminMenuOptions option : AdminMenuOptions.values()) {
+            options.add(option.name());
+        }
+        int choice = selectFromMenu(options);
+
+        switch (AdminMenuOptions.values()[choice]) {
+            case LOGOUT:
+                userController.logout();
+                // return to guest menu after logout
+                return true;
+            case SEARCH_FOR_PERFORMANCES:
+                eventPerformanceController.searchforPerformances();
+                return false;
+            case VIEW_PERFORMANCE:
+                eventPerformanceController.viewPerformance();
+                return false;
+            case SPONSOR_PERFORMANCE:
+                eventPerformanceController.sponsorPerformance();
+                return false;
+            default:
+                view.displayError("Invalid option.");
+                return false;
+        }
     }
 }

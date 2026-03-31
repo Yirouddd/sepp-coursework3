@@ -1,21 +1,31 @@
 package controller;
 
-import user.StudentPreferences;
 import user.User;
 import user.EntertainmentProvider;
+import user.StudentPreferences;
+
+import interface1.View;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
- * UserController.java
+ * UserController handles authentication (login, logout, register EP) and
+ * and student preference management
  */
-public class UserController {
-    StudentPreferences studentPreferences;
+public class UserController extends Controller {
 
     public static final String PREREGISTERED_USERS_FILE_PATH = "data/preregistered_users.txt";
     public static final String PREREGISTERED_ADMIN_FILE_PATH = "data/preregistered_admins.txt";
+
+    private List<User> users;
+    private StudentPreferences studentPreferences;
+
+    public UserController(User currentUser, View view) {
+        super(currentUser, view);
+        this.users = new ArrayList<>();
+        this.studentPreferences = new StudentPreferences();
+    }
 
     public void login() {
         // Implementation for user login
@@ -29,58 +39,58 @@ public class UserController {
         // Implementation for registering an entertainment provider
     }
 
-    private boolean EPAccountAlreadyExists(String email, String orgName, String businessNNumber) {
-        // Implementation for checking if an entertainment provider account already exists
+    private boolean EPAccountAlreadyExists(String email, String orgName, String businessNumber) {
+        // Implementation for checking if an entertainment provider account already
+        // exists
         return false; // Placeholder return value
     }
 
     public void editPreferences() {
-        Scanner scanner = new Scanner(System.in);
 
-        boolean validInput = false;
+        if (!checkCurrentUserIsStudent()) {
+            view.displayError("Only students can edit preferences");
+            return;
+        }
 
-        while (!validInput) {
-            System.out.println("\nSelect up to 3 preferences from: music, theatre, dance, movie, sports, games");
-            System.out.print("Enter preferences (separated by commas): ");
-            
-            String input = scanner.nextLine().trim();
+        while (true) {
+            String input = view.getInput("\nSelect up to 3 preferences from: music, theatre, dance, movie, sports \n"
+                    + "Enter preferences (separated by commas): ");
 
-            String[] preferencesArray = input.split(",");
-            if (preferencesArray.length > 3) {
-                System.out.println("You can select up to 3 preferences. Please try again.");
+            String[] preferences = input.split(",");
+            if (preferences.length > 3) {
+                view.displayError("You can select up to 3 preferences. Please try again.");
                 continue;
             }
 
-            // Validate each preference
-            boolean allValid = true;
-            List<String> validPreferences = new ArrayList<>();
+            List<String> valid = new ArrayList<>();
+            boolean isValid = true;
 
-            for (String preference : preferencesArray) {
-                String trimmedPreference = preference.trim().toLowerCase();
-                if (trimmedPreference.equals("music") || trimmedPreference.equals("theatre") || trimmedPreference.equals("dance") || trimmedPreference.equals("movie") || trimmedPreference.equals("sports") || trimmedPreference.equals("games")) {
-                    validPreferences.add(trimmedPreference);
-                } else {
-                    System.out.println("Invalid preference: " + preference + ". Please try again.");
-                    allValid = false;
+            for (String pref : preferences) {
+                String p = pref.trim().toLowerCase();
+
+                if (!(p.equals("music") || p.equals("theatre") || p.equals("dance")
+                        || p.equals("movie") || p.equals("sports"))) {
+                    view.displayError("Invalid preference: " + p + ". Please try again.");
+                    isValid = false;
                     break;
                 }
 
-                if (validPreferences.contains(trimmedPreference)) {
-                    System.out.println("Duplicate preference: " + preference + ". Please try again.");
-                    allValid = false;
+                if (valid.contains(p)) {
+                    view.displayError("Duplicate preference: " + p + ". Please try again");
+                    isValid = false;
                     break;
                 }
+
+                valid.add(p);
             }
 
-            if (!allValid) {
+            if (!isValid) {
                 continue;
             }
 
-            // Update preferences based on valid input
-            studentPreferences.updatePreferences(validPreferences.toString());
-
-            System.out.println("Preferences updated successfully.");
-            validInput = true;
+            studentPreferences.updatePreferences(input);
+            view.displaySuccess("Preferences updated.");
+            return;
         }
     }
 
@@ -88,12 +98,13 @@ public class UserController {
         // Implementation for adding a user to the system
     }
 
-    private void addPreregisteredUser() {
+    private void addPreregisteredUsers() {
         // Implementation for adding a preregistered user to the system
     }
 
     private EntertainmentProvider getEntertainmentProviderOwningEvent(long eventNumber) {
-        // Implementation for getting the entertainment provider that owns a specific event
+        // Implementation for getting the entertainment provider that owns a specific
+        // event
         return null; // Placeholder return value
     }
 

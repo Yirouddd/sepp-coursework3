@@ -2,14 +2,41 @@ package controller;
 
 import object.Booking;
 import object.Performance;
+import user.User;
+
+import interface1.View;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- * BookingController.java
+ * BookingController handles actions related to bookings.
  */
-public class BookingController {
-    //main.user.StudentPreferences studentPreferences;
+public class BookingController extends Controller {
+    // main.user.StudentPreferences studentPreferences;
 
     private long nextBookingNumber;
+    private List<Booking> bookings;
+    private List<Performance> performances;
+
+    public BookingController(User currentUser, View view, List<Performance> performances) {
+        super(currentUser, view);
+        this.nextBookingNumber = 1;
+        this.bookings = new ArrayList<>();
+        this.performances = performances;
+    }
+
+    // helper function which might help for bookPerformance, reviewPerformance,
+    // cancelBooking
+    // might not be used, just reduces duplication of code
+    private boolean ensureStudent() {
+        if (!checkCurrentUserIsStudent()) {
+            view.displayError("Only students can perform this action.");
+            return false;
+        }
+        return true;
+    }
 
     public void bookPerformance() {
         // Implementation for booking of performance
@@ -27,7 +54,7 @@ public class BookingController {
         // Implementation for adding a booking
     }
 
-    private String getPerformanceByID(long performanceID) {
+    private Performance getPerformanceByID(long performanceID) {
         // Implementation for getting performanceID
         return null; // Placeholder return value
     }
@@ -37,12 +64,12 @@ public class BookingController {
         return false; // Placeholder return value
     }
 
-    private String findBookingsByEventID(long eventID) {
+    private Collection<Booking> findBookingsByEventID(long eventID) {
         // Implementation for finding a booking by its eventID
         return null; // Placeholder return value
     }
 
-    private String getBookingByNumber(long bookingNumber) {
+    private Booking getBookingByNumber(long bookingNumber) {
         // Implementation for finding a booking by its eventID
         return null; // Placeholder return value
     }

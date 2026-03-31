@@ -4,7 +4,7 @@ import user.User;
 import object.Event;
 import object.Performance;
 
-import interface1.View;
+import interfaces.View;
 
 import java.util.List;
 import java.util.ArrayList;

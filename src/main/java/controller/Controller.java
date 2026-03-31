@@ -1,6 +1,7 @@
 package controller;
 
-import interface1.View;
+import interfaces.TextUserInterface;
+import interfaces.View;
 import user.AdminStaff;
 import user.Student;
 import user.EntertainmentProvider;
@@ -16,7 +17,6 @@ import java.util.Collection;
 public abstract class Controller {
 
   protected User currentUser;
-  protected View view;
 
   /**
    * Constructs a Controller for the current user.
@@ -26,7 +26,6 @@ public abstract class Controller {
 
   public Controller(User currentUser, View view) {
     this.currentUser = currentUser;
-    this.view = view;
   }
 
   /**
@@ -93,8 +92,9 @@ public abstract class Controller {
       index++;
     }
 
-    // get user input via the View interface
-    String userInput = view.getInput(); // in view it returns string
+    // get user input via the View interface      //Todo for Sasha: here miss a input Prompt
+    View view = new TextUserInterface();          // changed, since we view are not link to controller in the model diagram
+    String userInput = view.getInput(""); // in view it returns string
     int choice;
 
     try {

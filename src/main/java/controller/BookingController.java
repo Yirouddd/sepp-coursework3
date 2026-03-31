@@ -1,10 +1,11 @@
 package controller;
 
+import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
 import user.User;
 
-import interface1.View;
+import interfaces.View;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class BookingController extends Controller {
     // cancelBooking
     // might not be used, just reduces duplication of code
     private boolean ensureStudent() {
+        View view = new TextUserInterface();
         if (!checkCurrentUserIsStudent()) {
             view.displayError("Only students can perform this action.");
             return false;

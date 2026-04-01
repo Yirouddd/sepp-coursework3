@@ -27,7 +27,6 @@ public class EntertainmentProvider extends User {
      */
     public EntertainmentProvider(String email, String password, String orgName, String businessNumber, String name,
             String description) {
-        super(email, password);
         this.orgName = orgName;
         this.businessNumber = businessNumber;
         this.name = name;
@@ -39,5 +38,10 @@ public class EntertainmentProvider extends User {
         if (event != null) {
             events.add(event);
         }
+    }
+
+    // getter
+    public String getOrgName() {
+        return orgName;
     }
 }

@@ -22,7 +22,6 @@ public class Student extends User {
    * @param name     the name of the student
    */
   public Student(String email, String password, String name, int phoneNumber) {
-    super(email, password);
     // name cannot be null or empty
     assert name != null && !name.isEmpty();
     assert phoneNumber > 0 : "Phone number should be valid.";

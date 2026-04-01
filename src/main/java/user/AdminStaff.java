@@ -15,7 +15,6 @@ public class AdminStaff extends User {
    * @param name     the name of the admin staff
    */
   public AdminStaff(String email, String password, String name) {
-    super(email, password);
     // name cannot be null or empty
     assert name != null && !name.isEmpty();
     this.name = name;

@@ -14,29 +14,29 @@ public class TextUserInterface implements View {
     }
 
     @Override
-
     public void displaySuccess(String successMessage) {
-
+        System.out.println(successMessage);
     }
 
+    @Override
     public void displayError(String errorMessage) {
-
+        System.out.println(errorMessage);
     }
 
     @Override
     public void displayListOfPerformances(Collection<String> listOfPerformanceInfo) {
-
+        for (String performance : listOfPerformanceInfo) {
+            System.out.println(performance);
+        }
     }
 
-    public void displayListofPerformances(Collection<String> lisftOfPerformanceInfo) {
-
-    }
-
+    @Override
     public void displaySpecificPerformance(String performanceInfo) {
-
+        System.out.println(performanceInfo);
     }
 
+    @Override
     public void displayBookingRecord(String bookingRecord) {
-
+        System.out.println(bookingRecord);
     }
 }

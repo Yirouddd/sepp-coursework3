@@ -18,8 +18,6 @@ public class EventPerformanceController extends Controller {
     private List<Performance> performances;
 
     public EventPerformanceController(User currentUser, View view) {
-
-        super(currentUser, view);
         this.nextEventID = 1;
         this.nextPerformanceID = 1;
         this.events = new ArrayList<>();

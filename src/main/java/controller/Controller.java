@@ -16,17 +16,7 @@ import java.util.Collection;
 
 public abstract class Controller {
 
-  protected User currentUser;
-
-  /**
-   * Constructs a Controller for the current user.
-   *
-   * @param currentUser - the currently logged in user
-   */
-
-  public Controller(User currentUser, View view) {
-    this.currentUser = currentUser;
-  }
+  public User currentUser;
 
   /**
    * Check if the current user is a guest (not logged in)

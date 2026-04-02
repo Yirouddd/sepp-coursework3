@@ -40,17 +40,7 @@ public class EventPerformanceController extends Controller {
 
     }
 
-    public void cancelPerformance() {
-        View view = new TextUserInterface();
-        String performanceID = view.getInput("Enter performance ID to cnacel");
-
-        if (performanceID == null || performanceID.trim().isEmpty() ){
-            view.displayError("Performance ID cannot be empty.");
-            return;
-        }
-
-
-    }
+    public void cancelPerformance() {}
 
     private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
         return false;

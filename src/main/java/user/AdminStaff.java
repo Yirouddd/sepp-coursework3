@@ -1,3 +1,5 @@
+package user;
+
 /**
  * AdminStaff class represents an admin staff with a name.
  */

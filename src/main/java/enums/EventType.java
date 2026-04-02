@@ -1,3 +1,5 @@
+package enums;
+
 /*enum EventType */
 public enum EventType {
     Music,
@@ -6,4 +8,3 @@ public enum EventType {
     Movie,
     Sports
 }
-

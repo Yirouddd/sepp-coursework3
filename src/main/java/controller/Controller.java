@@ -1,5 +1,11 @@
 package controller;
 
+import interface1.View;
+import user.AdminStaff;
+import user.Student;
+import user.EntertainmentProvider;
+import user.User;
+
 import java.util.Collection;
 
 /**
@@ -10,6 +16,7 @@ import java.util.Collection;
 public abstract class Controller {
 
   protected User currentUser;
+  protected View view;
 
   /**
    * Constructs a Controller for the current user.
@@ -17,8 +24,9 @@ public abstract class Controller {
    * @param currentUser - the currently logged in user
    */
 
-  public Controller(User currentUser) {
+  public Controller(User currentUser, View view) {
     this.currentUser = currentUser;
+    this.view = view;
   }
 
   /**
@@ -28,7 +36,7 @@ public abstract class Controller {
    *         false otherwise
    */
 
-  private boolean checkCurrentUserIsGuest() {
+  protected boolean checkCurrentUserIsGuest() {
     return currentUser == null;
   }
 
@@ -39,7 +47,7 @@ public abstract class Controller {
    *         false otherwise
    */
 
-  private boolean checkCurrentUserIsAdmin() {
+  protected boolean checkCurrentUserIsAdmin() {
     return currentUser instanceof AdminStaff;
   }
 
@@ -49,7 +57,7 @@ public abstract class Controller {
    * @return true if the current user is a astudent,
    *         false otherwise
    */
-  private boolean checkCurrentUserIsStudent() {
+  protected boolean checkCurrentUserIsStudent() {
     return currentUser instanceof Student;
   }
 
@@ -70,7 +78,7 @@ public abstract class Controller {
    * @param options the collection of menu options
    * @return the index of the selected option in the list
    */
-  public <T> int selectFromMenu(Collection<T> options) {
+  protected <T> int selectFromMenu(Collection<T> options) {
     // options cannot be null, they should exist
     if (options == null || options.isEmpty()) {
       throw new IllegalArgumentException("Options cannot be null or empty, should be listed.");
@@ -78,19 +86,21 @@ public abstract class Controller {
 
     System.out.println("Options were not added, sorry.");
 
+    // display menu options
     int index = 1;
     for (T option : options) {
       System.out.println(index + ". " + option);
       index++;
     }
 
+    // get user input via the View interface
     String userInput = view.getInput(); // in view it returns string
     int choice;
 
     try {
       choice = Integer.parseInt(userInput);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The input must be a number");
+      throw new IllegalArgumentException("The input must be a number.");
     }
 
     if (choice < 1 || choice > options.size()) {

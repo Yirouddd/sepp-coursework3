@@ -1,5 +1,9 @@
 package controller;
 
+import user.StudentPreferences;
+import user.User;
+import user.EntertainmentProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,7 +12,7 @@ import java.util.Scanner;
  * UserController.java
  */
 public class UserController {
-    main.user.StudentPreferences studentPreferences;
+    StudentPreferences studentPreferences;
 
     public static final String PREREGISTERED_USERS_FILE_PATH = "data/preregistered_users.txt";
     public static final String PREREGISTERED_ADMIN_FILE_PATH = "data/preregistered_admins.txt";
@@ -73,7 +77,7 @@ public class UserController {
             }
 
             // Update preferences based on valid input
-            studentPreferences.updatePreferences(validPreferences);
+            studentPreferences.updatePreferences(validPreferences.toString());
 
             System.out.println("Preferences updated successfully.");
             validInput = true;

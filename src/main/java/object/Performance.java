@@ -1,5 +1,8 @@
 package object;
 
+import enums.PerdformanceStatus; //needs renaming
+
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -23,7 +26,7 @@ public class Performance {
     private double sponsoredAmount;
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
-    PerformanceStatus status;
+    PerdformanceStatus status;
 
     public Performance(long performanceId, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performersNames, String venueAddress, int duration) {
         this.performanceId = performanceId;
@@ -109,5 +112,18 @@ public class Performance {
         // Implementation for converting the performance details to a string representation
         return ""; // Placeholder return value
     }
-    
+
+    public long getID() {
+        return performanceId;
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
+    }
+
+    public Event getEvent() {
+        // TODO: add a field: private Event event;
+        return null;  // null as placeholder for now
+    }
+
 }

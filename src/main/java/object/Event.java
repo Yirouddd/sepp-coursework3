@@ -1,6 +1,9 @@
 package object;
 
+import enums.EventType;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -11,12 +14,14 @@ import java.util.Collection;
 public class Event{
 
     private long eventID;
-    private String title; 
+    private String title;
     private EventType type;
     private boolean isTicketed;
+    private Collection<Performance> performances;
 
     public Event() {
         // TODO
+        this.performances = new ArrayList<>();
     }
     public Performance createPerformance(long performanceID, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performerNames, String venueAddress, int venueCapacity, boolean venueIsOutdoors, boolean venueIsSmoking, double ticketPrice) {
         // TODO
@@ -66,4 +71,34 @@ public class Event{
         // TODO
         return null;
     }
+
+    public long getEventID() {
+        return eventID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public Collection<Performance> getPerformances() {
+        return performances;
+    }
+
+    public void setEventID(long id) {
+        this.eventID = id;
+    }
+
+    public void setTitle(String t) {
+        this.title = t;
+    }
+
+    public void setType(EventType t) {
+        this.type = t;
+    }
+
+    public void setTicketed(boolean t) {
+        this.isTicketed = t;
+    }
+
+
 }

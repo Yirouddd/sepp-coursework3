@@ -1,28 +1,26 @@
-package controller;
-
-import object.Event;
-import object.Performance;
+import interfaces.View;
+import enums.EventType;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import interface1.TextUserInterface;
-import enums.EventType;
-import java.time.format.DateTimeFormatter;
+public class EventPerformanceController extends Controller {
 
+    private long nextEventID;
+    private long nextPerformanceID;
 
-public class EventPerformanceController {
+    private List<Event> events;
+    private List<Performance> performances;
 
-    //fields needed
-    private TextUserInterface view;
-    private Collection<Event> events;
-    private long nextEventID = 1;
-
-    // constructor
-    public EventPerformanceController(TextUserInterface view, Collection<Event> events) {
-        this.view = view;
-        this.events = events;
+    public EventPerformanceController(User currentUser, View view) {
+        super(currentUser, view);
+        this.nextEventID = 1;
+        this.nextPerformanceID = 1;
+        this.events = new ArrayList<>();
+        this.performances = new ArrayList<>();
     }
 
     public Event createEvent() {
@@ -72,8 +70,7 @@ public class EventPerformanceController {
         //step 5: Create the Event object
         //now we have all the info, create a new Event
         //give it a unique ID (eventID)
-        long eventID = 1; //need a counter to make this unique but how? did any of the documents
-        // like the scenario or the class diagram didnt mention this? or the requirements doc
+        long eventID = nextEventID++;
         Event event = new Event(); //create empty event
 
         //TODO: set fields (title, type, isTicketed, eventID)
@@ -183,7 +180,7 @@ public class EventPerformanceController {
             }
 
             //creating Performance object
-            long performanceID = 1000 + performanceCount; // to give a unique ID
+            long performanceID = nextPerformanceID++; // to give a unique ID
             Collection<String> performers = new ArrayList<>();
             performers.add(performerNames);
 
@@ -199,6 +196,7 @@ public class EventPerformanceController {
             //TODO: Set remaining fields on performance (outdoors, smoking, tickets, price, status)
             // Add this performance to the event
             event.addPerformance(performance);
+            performances.add(performance);
             performanceCount++;
 
             // ask if they want to add another another performance
@@ -235,7 +233,7 @@ public class EventPerformanceController {
 
     }
 
-    private boolean checkIfSponsorshipPossible(Performance performance, int amount){
+    private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
 
         return false;
     }
@@ -244,17 +242,17 @@ public class EventPerformanceController {
 
     }
 
-    private void addEvent(Event e){
+    private void addEvent(Event e) {
         if (e != null) {
             events.add(e);
         }
     }
 
-    private void addPerformance(Performance p){
+    private void addPerformance(Performance p) {
 
     }
 
-    private Event getEventByID(long eventID){
+    private Event getEventByID(long eventID) {
         for (Event e : events) {
             if (e.getEventID() == eventID) {
                 return e;
@@ -263,7 +261,7 @@ public class EventPerformanceController {
         return null;
     }
 
-    private Event getEventByTitle(String title){
+    private Event getEventByTitle(String title) {
         if (title == null) return null;
         for (Event e : events) {
             if (e.getTitle().equalsIgnoreCase(title)) {
@@ -273,15 +271,12 @@ public class EventPerformanceController {
         return null;
     }
 
-    private Performance getPerformanceByID(long performanceID){
-        for (Event e : events) {
-            for (Performance performance : e.getPerformances()) {
-                if (performance.getID() == performanceID) {
-                    return performance;
-                }
+    private Performance getPerformanceByID(long performanceID) {
+        for (Performance p : performances) {
+            if (p.getID() == performanceID) {
+                return p;
             }
         }
         return null;
     }
-
 }

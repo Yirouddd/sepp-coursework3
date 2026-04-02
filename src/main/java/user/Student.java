@@ -11,18 +11,17 @@ public class Student extends User {
   private String name;
   private int phoneNumber;
   private List<Booking> bookings;
+  private StudentPreferences studentPreferences;
 
   /**
    * Constructs a new Student with the specified details.
    * Email and password are inherited from abstract class User.
    *
-   * @param email       the student email (from User class, used as username)
-   * @param password    the student password (from User abstract class)
-   * @param name        the name of the student
-   * @param phoneNumber the student's phone number
+   * @param email    the student email (from User class, used as username)
+   * @param password the student password (from User abstract class)
+   * @param name     the name of the student
    */
   public Student(String email, String password, String name, int phoneNumber) {
-    super(email, password);
     // name cannot be null or empty
     assert name != null && !name.isEmpty();
     assert phoneNumber > 0 : "Phone number should be valid.";
@@ -30,6 +29,7 @@ public class Student extends User {
     this.name = name;
     this.phoneNumber = phoneNumber;
     this.bookings = new ArrayList<>();
+    this.studentPreferences = new StudentPreferences(false, false, false, false, false);
   }
 
   /**
@@ -39,5 +39,9 @@ public class Student extends User {
     assert booking != null : "Non-existent booking cannot be added.";
     bookings.add(booking);
       return List.of();
+  }
+
+  public StudentPreferences getStudentPreferences() {
+    return studentPreferences;
   }
 }

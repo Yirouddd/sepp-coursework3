@@ -1,27 +1,44 @@
 package controller;
 
+import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
 import object.Event;
-import interface1.TextUserInterface;
+import user.User;
+import interfaces.View;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
- * BookingController.java
+ * BookingController handles actions related to bookings.
  */
-public class BookingController {
-    //main.user.StudentPreferences studentPreferences;
+public class BookingController extends Controller {
+    // main.user.StudentPreferences studentPreferences;
 
-    //added fields needed
-    private TextUserInterface view;
-    private Collection<Event> events;
-    private long nextBookingNumber = 1;
+    private long nextBookingNumber;
+    private List<Booking> bookings;
+    private List<Performance> performances;
 
-    // Constructor
-    public BookingController(TextUserInterface view, Collection<Event> events) {
-        this.view = view;
-        this.events = events;
+    public BookingController(User currentUser, View view, List<Performance> performances) {
+        super(currentUser, view);
+        this.nextBookingNumber = 1;
+        this.bookings = new ArrayList<>();
+        this.performances = performances;
+    }
+
+    // helper function which might help for bookPerformance, reviewPerformance,
+    // cancelBooking
+    // might not be used, just reduces duplication of code
+    private boolean ensureStudent() {
+        View view = new TextUserInterface();
+        if (!checkCurrentUserIsStudent()) {
+            view.displayError("Only students can perform this action.");
+            return false;
+        }
+        return true;
     }
 
     public void bookPerformance() {
@@ -95,7 +112,7 @@ public class BookingController {
 
         performance.review(rating, comment);
 
-        // ===== STEP 7: Display success =====
+        //7. Display success
         view.displaySuccess("Review submitted successfully!");
     }
 
@@ -109,11 +126,9 @@ public class BookingController {
     }
 
     private Performance getPerformanceByID(long performanceID) {
-        for (Event event : events) {
-            for (Performance perf : event.getPerformances()) {
-                if (perf.getID() == performanceID) {
-                    return perf;
-                }
+        for (Performance perf : performances) {
+            if (perf.getID() == performanceID) {
+                return perf;
             }
         }
         return null;
@@ -124,12 +139,12 @@ public class BookingController {
         return false; // Placeholder return value
     }
 
-    private String findBookingsByEventID(long eventID) {
+    private Collection<Booking> findBookingsByEventID(long eventID) {
         // Implementation for finding a booking by its eventID
         return null; // Placeholder return value
     }
 
-    private String getBookingByNumber(long bookingNumber) {
+    private Booking getBookingByNumber(long bookingNumber) {
         // Implementation for finding a booking by its eventID
         return null; // Placeholder return value
     }

@@ -1,5 +1,7 @@
 package controller;
 
+import interfaces.TextUserInterface;
+import interfaces.View;
 import user.User;
 import object.Event;
 import object.Performance;
@@ -17,6 +19,7 @@ public class EventPerformanceController extends Controller {
     private List<Event> events;
     private List<Performance> performances;
 
+    // Todo: the argument is wrong
     public EventPerformanceController(User currentUser, View view) {
         this.nextEventID = 1;
         this.nextPerformanceID = 1;
@@ -38,11 +41,18 @@ public class EventPerformanceController extends Controller {
     }
 
     public void cancelPerformance() {
+        View view = new TextUserInterface();
+        String performanceID = view.getInput("Enter performance ID to cnacel");
+
+        if (performanceID == null || performanceID.trim().isEmpty() ){
+            view.displayError("Performance ID cannot be empty.");
+            return;
+        }
+
 
     }
 
     private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
-
         return false;
     }
 

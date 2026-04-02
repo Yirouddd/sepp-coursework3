@@ -9,34 +9,34 @@ public class TextUserInterface implements View {
     @Override
     public String getInput(String inputPrompt) {
         System.out.println(inputPrompt);
-        String input = scanner.nextLine().trim();
-        return input;
+        return scanner.nextLine().trim();
     }
 
     @Override
-
     public void displaySuccess(String successMessage) {
-
+        System.out.println("SUCCESS " + successMessage);
     }
 
+    @Override
     public void displayError(String errorMessage) {
-
+        System.err.println("ERROR "+ errorMessage);
     }
 
     @Override
     public void displayListOfPerformances(Collection<String> listOfPerformanceInfo) {
-
-    }
-
-    public void displayListofPerformances(Collection<String> lisftOfPerformanceInfo) {
-
+        System.out.println("---List of Performances---");
+        for (String info : listOfPerformanceInfo) {
+            System.out.println(info);
+        }
     }
 
     public void displaySpecificPerformance(String performanceInfo) {
-
+        System.out.println("---Performance Details---");
+        System.out.println(performanceInfo);
     }
 
     public void displayBookingRecord(String bookingRecord) {
-
+        System.out.println("---Booking Record---");
+        System.out.println(bookingRecord);
     }
 }

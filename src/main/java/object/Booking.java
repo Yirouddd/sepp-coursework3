@@ -86,5 +86,9 @@ public class Booking {
         return bookingStatus;
     }
 
+    public long getBookingNumber () {
+        return bookingNumber;
+    }
+
 
 }

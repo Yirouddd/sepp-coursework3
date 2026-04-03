@@ -88,7 +88,6 @@ public class Performance {
      * @return true if event is ticketed
      */
     public boolean checkIfEventIsTicketed() {
-        // Implementation for checking if the event is ticketed
         return numTicketsTotal > 0;
     }
 

@@ -1,6 +1,7 @@
 package object;
 
 import enums.BookingStatus;
+import user.Student;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,9 @@ public class Booking {
     private int numTickets;
     private double amountPaid;
     private LocalDateTime bookingDateTime;
-    BookingStatus status;
+    private BookingStatus status;
+    private Student student;
+    private BookingStatus bookingStatus;
 
 
     /**
@@ -24,24 +27,26 @@ public class Booking {
      * @param bookingDateTime the date and time the booking was made
      * @param status the status of the booking
      */
-    public Booking(long bookingNumber, int numTickets, double amountPaid, LocalDateTime bookingDateTime, BookingStatus status) {
+    public Booking(Student student, long bookingNumber, int numTickets, double amountPaid, LocalDateTime bookingDateTime, BookingStatus status) {
         this.bookingNumber = bookingNumber;
         this.numTickets = numTickets;
         this.amountPaid = amountPaid;
         this.bookingDateTime = bookingDateTime;
         this.status = status;
+        this.student = student;
+        bookingStatus = BookingStatus.ACTIVE;
     }
 
     public void cancelByStudent() {
-        // Implementation for student cancelling a booking
+        bookingStatus = BookingStatus.CANCELLEDBYSTUDENT;
     }
 
     public void cancelPaymentFailed() {
-        // Implementation for booking being cancelled due to failed payment
+        bookingStatus = BookingStatus.PAYMENTFAILED;
     }
 
     public void cancelByProvider() {
-        // Implementation for EP cancelling a booking
+        bookingStatus = BookingStatus.CANCELLEDBYPROVIDER;
     }
 
     public boolean checkBookedByStudent(String email) {
@@ -59,4 +64,25 @@ public class Booking {
         return null; // Placeholder return value
     }
 
+
+    // getter
+    public int getNumTickets() {
+        return numTickets;
+    }
+
+    public String getStudentEmail() {
+        return student.getEmail();
+    }
+
+    public int getStudentPhone() {
+        return student.getPhoneNumber();
+    }
+
+    public double getTransactionAmount() {
+        return amountPaid;
+    }
+
+    public BookingStatus getBookingStatus () {
+        return bookingStatus;
+    }
 }

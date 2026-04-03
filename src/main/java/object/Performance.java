@@ -135,7 +135,7 @@ public class Performance {
      */
     public String getEventTitle() {
         // Implementation for getting the event title
-        return eventTitle;
+        return title;
     }
 
     /**
@@ -143,8 +143,7 @@ public class Performance {
      * @return true if current time is before startDateTime
      */
     public boolean checkHasNotHappenedYet() {
-        // Implementation for checking if the performance has not happened yet
-        return LocalDateTime.now().isBefore(startDateTime);
+        return startDateTime.isAfter(LocalDateTime.now());
     }
 
     /**
@@ -162,9 +161,13 @@ public class Performance {
      * @return true if there are active bookings
      */
     public boolean hasActiveBooking() {
-        // Implementation for checking if there are active bookings for the performance
-        return !bookings.isEmpty();
-    }
+       for (Booking b : bookings) {
+          if (b.getStatus() == BookingStatus.ACTIVE) {
+              return true;
+          }
+        }
+        return false;
+      }
 
     /**
      * Returns booking details for refund processing

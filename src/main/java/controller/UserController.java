@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+
+
 /**
  * UserController handles authentication (login, logout, register EP) and
  * and student preference management
@@ -24,6 +26,7 @@ public class UserController extends Controller {
 
 
     public UserController(String preregisteredUsersFilePath, String preregisteredAdminFilePath) {
+        super(null, null); //added this (no user/view yet for UserController)
         PREREGISTERED_USERS_FILE_PATH = preregisteredUsersFilePath;
         PREREGISTERED_ADMIN_FILE_PATH = preregisteredAdminFilePath;
 

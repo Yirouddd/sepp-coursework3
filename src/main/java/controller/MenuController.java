@@ -23,6 +23,7 @@ public class MenuController extends Controller {
 
     public MenuController(User currentUser, View view, UserController userController,
                           EventPerformanceController eventPerformanceController, BookingController bookingController) {
+        super(currentUser, view); //added this line
         this.userController = userController;
         this.eventPerformanceController = eventPerformanceController;
         this.bookingController = bookingController;

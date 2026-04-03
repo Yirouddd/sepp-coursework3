@@ -1,9 +1,10 @@
 package object;
 
 import enums.EventType;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.ArrayList;
+
 
 /**
  * Event class
@@ -16,10 +17,57 @@ public class Event{
     private String title;
     private EventType type;
     private boolean isTicketed;
+    private Collection<Performance> performances; //added this
 
     public Event() {
-        // TODO
+        //add this
+        this.performances = new ArrayList<>();
     }
+
+    //added getters below:
+    public long getEventID() {
+        return eventID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public EventType getType() {
+        return type;
+    }
+
+    public boolean isTicketed() {
+        return isTicketed;
+    }
+
+    public Collection<Performance> getPerformances() {
+        return performances;
+    }
+
+    //added setters
+    public void setEventID(long id) {
+        this.eventID = id;
+    }
+
+    public void setTitle(String t) {
+        this.title = t;
+    }
+
+    public void setType(EventType t) {
+        this.type = t;
+    }
+
+    public void setTicketed(boolean t) {
+        this.isTicketed = t;
+    }
+
+    public void addPerformance(Performance p) {
+        if (p != null) {
+            performances.add(p);
+        }
+    }
+
     public Performance createPerformance(long performanceID, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performerNames, String venueAddress, int venueCapacity, boolean venueIsOutdoors, boolean venueIsSmoking, double ticketPrice) {
         // TODO
         return null;
@@ -58,10 +106,6 @@ public class Event{
     public boolean hasPerformanceAtSameTimes(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         // TODO
         return false;
-    }
-
-    public void addPerformance(Performance p) {
-        // TODO
     }
 
     public String toString() {

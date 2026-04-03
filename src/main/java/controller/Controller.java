@@ -17,7 +17,13 @@ import java.util.Collection;
 public abstract class Controller {
 
   public User currentUser;
+  protected View view; //added this field
 
+  //added constructor so that super(currentUser, view) in EventPerformanceController works
+  public Controller(User currentUser, View view) {
+    this.currentUser = currentUser;
+    this.view = view;
+  }
   /**
    * Check if the current user is a guest (not logged in)
    * 

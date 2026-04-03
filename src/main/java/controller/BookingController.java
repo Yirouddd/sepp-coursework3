@@ -22,6 +22,7 @@ public class BookingController extends Controller {
     private List<Performance> performances;
 
     public BookingController(User currentUser, View view, List<Performance> performances) {
+        super(currentUser, view); //added this line
         this.nextBookingNumber = 1;
         this.bookings = new ArrayList<>();
         this.performances = performances;

@@ -111,5 +111,12 @@ public class Performance {
         // Implementation for converting the performance details to a string representation
         return ""; // Placeholder return value
     }
-    
+
+    public long getID() {
+        return performanceId;
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
+    }
 }

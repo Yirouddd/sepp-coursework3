@@ -1,13 +1,10 @@
-package test;
+package systemTest;
 
 import controller.EventPerformanceController;
-import interfaces.View;
 import object.Event;
 import user.EntertainmentProvider;
 import user.User;
-import test.MockView;
-import java.util.ArrayList;
-import java.util.List;
+import systemTest.MockView;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;

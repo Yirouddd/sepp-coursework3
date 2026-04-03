@@ -1,4 +1,4 @@
-package test;
+package systemTest;
 
 import interfaces.View;
 import java.util.Collection;

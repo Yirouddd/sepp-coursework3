@@ -50,4 +50,13 @@ public class Student extends User {
   public StudentPreferences getStudentPreferences() {
     return studentPreferences;
   }
+
+
+  // getter
+
+  @Override
+  public String getEmail() {
+    return super.getEmail();
+  }
+
 }

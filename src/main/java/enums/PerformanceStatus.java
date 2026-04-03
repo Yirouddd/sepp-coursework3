@@ -1,6 +1,6 @@
 package enums;
 
-public enum PerdformanceStatus {
+public enum PerformanceStatus {
     ACTIVE,
     CANCELLED
 }

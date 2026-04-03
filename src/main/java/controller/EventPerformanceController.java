@@ -8,6 +8,7 @@ import interfaces.View;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 public class EventPerformanceController extends Controller {
 
@@ -43,10 +44,8 @@ public class EventPerformanceController extends Controller {
         }
 
         Performance performance = null;
-        int attempts = 0;
 
-        while (performance == null && attempts < 7) {
-            attempts++;
+        while (performance == null) {
             try {
                 String input = view.getInput("Enter performance ID: ");
                 long performanceID = Long.parseLong(input);
@@ -57,11 +56,6 @@ public class EventPerformanceController extends Controller {
             } catch (NumberFormatException e) {
                 view.displayError("Invalid input. Please enter a number.");
             }
-        }
-
-        if (performance == null) {
-            view.displayError("Too many unsuccessful attempts were made");
-            return;
         }
 
         // show performance details
@@ -103,12 +97,80 @@ public class EventPerformanceController extends Controller {
     }
 
     private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
-
-        return false;
+        if (!performance.checkIfEventIsTicketed()) {
+            view.displayError("Sponsorship cannot be applied to non-ticketed " +
+                    "performances.");
+            return false;
+        }
+        if (amount <= 0) {
+            view.displayError("Sponsorship must be positive.");
+            return false;
+        }
+        return true;
     }
 
     public void sponsorPerformance() {
+        if (performances.isEmpty()) {
+            view.displayError("No performances available to sponsor.");
+            return;
+        }
 
+        Performance performance = null;
+
+        while (performance == null) {
+            try {
+                String input = view.getInput("Enter performance ID to " +
+                        "sponsor: ");
+                long performanceID = Long.parseLong(input);
+                performance = getPerformanceByID(performanceID);
+                if (performance == null) {
+                    view.displayError("Performance with given ID does not " +
+                            "exist");
+                }
+            }
+            catch (NumberFormatException e) {
+                view.displayError("Invalid input. Please reenter a " +
+                        "performance ID.");
+            }
+            catch (NoSuchElementException e) {
+                view.displayError("No input provided, cancelling sponsorship.");
+                return;
+            }
+        }
+
+        // check if the event is ticketed
+        if (!performance.checkIfEventIsTicketed()) {
+            view.displayError("The requested performance event is not " +
+                    "ticketed. It cannot be sponsored.");
+            return;
+        }
+
+        // get valid sponsorship amount
+        double amount = -1;
+        while (amount <= 0 || amount > performance.getTicketPrice()) {
+            try {
+                String input =
+                        view.getInput("Enter sponsorship amount: £" + performance.getTicketPrice());
+                amount = Double.parseDouble(input);
+                if (amount <= 0 || amount > performance.getTicketPrice()) {
+                    view.displayError("Invalid amount. It cannot be less than" +
+                            " 0 or bigger than ticket price.");
+                }
+            }
+            catch (NumberFormatException e) {
+                view.displayError("Invalid input. Please enter a number.");
+            }
+            catch (NoSuchElementException e) {
+                view.displayError("No input provided, cancelling sponsorship.");
+                return;
+            }
+        }
+
+        performance.sponsor(amount);
+
+        view.displaySuccess("Sponsorship successful! You sponsored a " +
+                "performance with ID " + performance.getPerformanceId() +
+                "with £" + amount);
     }
 
     public void addEvent(Event e) {

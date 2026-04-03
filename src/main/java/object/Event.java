@@ -1,6 +1,7 @@
 package object;
 
 import enums.EventType;
+import user.EntertainmentProvider;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -16,10 +17,19 @@ public class Event{
     private String title;
     private EventType type;
     private boolean isTicketed;
+    private EntertainmentProvider entertainmentProvider;
 
-    public Event() {
-        // TODO
+
+    public Event(long eventID,
+                 String title,
+                 EventType type,
+                 EntertainmentProvider entertainmentProvider) {
+        this.eventID = eventID;
+        this.title = title;
+        this.type = type;
+        this.entertainmentProvider = entertainmentProvider;
     }
+
     public Performance createPerformance(long performanceID, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performerNames, String venueAddress, int venueCapacity, boolean venueIsOutdoors, boolean venueIsSmoking, double ticketPrice) {
         // TODO
         return null;
@@ -36,8 +46,7 @@ public class Event{
     }
 
     public String getOrganiserName() {
-        // TODO
-        return null;
+        return entertainmentProvider.getOrgName();
     }
 
     public String getOrganiserEmail() {
@@ -67,5 +76,14 @@ public class Event{
     public String toString() {
         // TODO
         return null;
+    }
+
+    // getter
+    public String getTitle() {
+        return title;
+    }
+
+    public Object getOrganiser() {
+        return entertainmentProvider;
     }
 }

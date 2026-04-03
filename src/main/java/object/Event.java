@@ -156,13 +156,8 @@ public class Event{
         return isTicketed;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getTitle() {
+    public String getEventTitle() {
         return eventTitle;
     }
-
 
 }

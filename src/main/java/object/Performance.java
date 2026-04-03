@@ -308,7 +308,7 @@ public class Performance {
     }
 
     public PerformanceStatus getStatus() {
-        return status;
+        return performanceStatus;
     }
 
     public double getSponsoredAmount() {

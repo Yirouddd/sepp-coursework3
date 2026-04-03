@@ -1,5 +1,6 @@
 package object;
 
+import enums.BookingStatus;
 import enums.PerformanceStatus;
 
 import java.time.LocalDateTime;
@@ -32,7 +33,8 @@ public class Performance {
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
     private Collection<Booking> bookings;
-    PerformanceStatus status;
+    PerformanceStatus performanceStatus;
+    private Event event;
 
     public Performance(long performanceId, long eventId,
                        String eventTitle,LocalDateTime startDateTime,
@@ -72,14 +74,14 @@ public class Performance {
         this.reviewsRatings = new ArrayList<>();
         this.reviewsComments = new ArrayList<>();
         this.bookings = new ArrayList<>();
-        this.status = PerformanceStatus.ACTIVE;
+        this.performanceStatus = PerformanceStatus.ACTIVE;
     }
 
     /**
      * Cancels performance
      */
     public void cancel() {
-        this.status = PerformanceStatus.CANCELLED;    }
+        this.performanceStatus = PerformanceStatus.CANCELLED;    }
 
     /**
      * Checks if event is ticketed
@@ -162,7 +164,7 @@ public class Performance {
      */
     public boolean hasActiveBooking() {
         for (Booking b : bookings) {
-          if (b.getStatus() == BookingStatus.ACTIVE) {
+          if (b.getBookingStatus() == BookingStatus.ACTIVE) {
               return true;
           }
         }
@@ -271,7 +273,7 @@ public class Performance {
 
         details.append("Tickets left: ").append(getTicketsLeft()).append("\n");
         details.append("Price: £").append(getFinalTicketPrice()).append("\n");
-        details.append("Status: ").append(status).append("\n");
+        details.append("Status: ").append(performanceStatus).append("\n");
 
         if (isSponsored) {
             details.append("Sponsored: £").append(sponsoredAmount).append("\n");
@@ -306,7 +308,7 @@ public class Performance {
     }
 
     public PerformanceStatus getStatus() {
-        return status;
+        return performanceStatus;
     }
 
     public double getSponsoredAmount() {
@@ -362,5 +364,13 @@ public class Performance {
 
     public double getTicketPrice() {
         return ticketPrice;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public Collection<Booking> getBookings () {
+        return bookings;
     }
 }

@@ -22,6 +22,7 @@ public class Event{
     private String organiserName;
     private String organiserEmail;
     private List<Performance> performances;
+    private EntertainmentProvider entertainmentProvider;
 
     public Event(long eventID, String eventTitle, EventType type,
                  boolean isTicketed, String organiserName, String organiserEmail) {
@@ -134,7 +135,7 @@ public class Event{
         StringBuilder result = new StringBuilder();
         result.append("---Event Details---\n");
         result.append("Event ID: ").append(eventID).append("\n");
-        result.append("Title: ").append(title).append("\n");
+        result.append("Title: ").append(eventTitle).append("\n");
         result.append("Type: ").append(type).append("\n");
         result.append("Ticketed: ").append(isTicketed).append("\n");
         result.append("Organiser: ").append(organiserName).append(" - ").append(organiserEmail).append("\n");
@@ -156,6 +157,8 @@ public class Event{
     }
 
     public String getTitle() {
-        return title;
+        return eventTitle;
     }
+
+
 }

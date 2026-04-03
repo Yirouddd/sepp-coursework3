@@ -3,7 +3,9 @@ package object;
 import enums.EventType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Event class
@@ -13,20 +15,55 @@ import java.util.Collection;
 public class Event{
 
     private long eventID;
-    private String title;
+    private String eventTitle;
     private EventType type;
     private boolean isTicketed;
+    private String organiserName;
+    private String organiserEmail;
+    private List<Performance> performances;
 
-    public Event() {
-        // TODO
+    public Event(long eventID, String eventTitle, EventType type,
+                 boolean isTicketed, String organiserName, String organiserEmail) {
+        assert eventID > 0: "Event ID must be positive";
+        assert eventTitle != null && !eventTitle.isEmpty(): "Title cannot be " +
+                "null or " +
+                "empty";
+        assert organiserEmail != null && !organiserEmail.isEmpty():
+                "Organiser email is required";
+
+        this.eventID = eventID;
+        this.eventTitle = eventTitle;
+        this.type = type;
+        this.isTicketed = isTicketed;
+        this.organiserName = organiserName;
+        this.organiserEmail = organiserEmail;
+        this.performances = new ArrayList<>();
     }
-    public Performance createPerformance(long performanceID, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performerNames, String venueAddress, int venueCapacity, boolean venueIsOutdoors, boolean venueIsSmoking, double ticketPrice) {
-        // TODO
-        return null;
+    public Performance createPerformance(long performanceID,
+                                         LocalDateTime startDateTime,
+                                         LocalDateTime endDateTime,
+                                         Collection<String> performerNames,
+                                         String venueAddress,
+                                         int venueCapacity,
+                                         boolean venueIsOutdoors,
+                                         boolean venueIsSmoking,
+                                         int numTicketsTotal,
+                                         double ticketPrice) {
+        Performance p = new Performance(
+                performanceID, this.eventID, this.eventTitle, startDateTime,
+                endDateTime, performerNames, venueAddress, venueCapacity,
+                venueIsOutdoors, venueIsSmoking, numTicketsTotal, ticketPrice
+        );
+        addPerformance(p);
+        return p;
     }
 
     public Performance getPerformanceByID(long performanceID) {
-        // TODO
+        for (Performance p : performances) {
+            if (p.getPerformanceId() == performanceID) {
+                return p;
+            }
+        }
         return null;
     }
 
@@ -36,36 +73,89 @@ public class Event{
     }
 
     public String getOrganiserName() {
-        // TODO
-        return null;
+        return organiserName;
     }
 
     public String getOrganiserEmail() {
-        // TODO
-        return null;
+        return organiserEmail;
     }
 
     public double getAverageRatingOfPerformances() {
-        // TODO
-        return 0.0;
+        if (performances.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+        int count = 0;
+
+        for (Performance p : performances) {
+            double average = p.getAverageRating();
+
+            if (average > 0) {
+                total += average;
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            return 0.0;
+        }
+
+        return (double) total / count;
     }
 
     public Collection<String> getAllPerformanceReviews() {
-        // TODO
-        return null;
+        List<String> reviews = new ArrayList<>();
+        for (Performance p : performances) {
+            for (String comment : p.getReviewsComments()) {
+                reviews.add("Performance " + p.getPerformanceId() + ": " + comment);
+            }
+        }
+        return reviews;
     }
 
     public boolean hasPerformanceAtSameTimes(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        // TODO
+        for (Performance p : performances) {
+            if (startDateTime.isBefore(p.getEndDateTime()) && endDateTime.isAfter(p.getStartDateTime())) {
+                return true;
+            }
+        }
         return false;
     }
 
     public void addPerformance(Performance p) {
-        // TODO
+        if (p != null) {
+            performances.add(p);
+        }
     }
 
     public String toString() {
-        // TODO
-        return null;
+        StringBuilder result = new StringBuilder();
+        result.append("---Event Details---\n");
+        result.append("Event ID: ").append(eventID).append("\n");
+        result.append("Title: ").append(eventTitle).append("\n");
+        result.append("Type: ").append(type).append("\n");
+        result.append("Ticketed: ").append(isTicketed).append("\n");
+        result.append("Organiser: ").append(organiserName).append(" - ").append(organiserEmail).append("\n");
+        result.append("Number of performances: ").append(performances.size()).append("\n");
+        result.append("Performances: \n");
+        for (Performance p : performances) {
+            result.append(" - ").append(p.getPerformanceId()).append("\n");
+        }
+        return result.toString();
     }
+
+    //getters
+    public long getEventID() {
+        return eventID;
+    }
+
+    public String getEventTitle() {
+        return eventTitle;
+    }
+
+    public boolean isTicketed() {
+        return isTicketed;
+    }
+
 }

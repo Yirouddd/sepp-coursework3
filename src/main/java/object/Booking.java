@@ -13,8 +13,15 @@ public class Booking {
     private int numTickets;
     private double amountPaid;
     private LocalDateTime bookingDateTime;
+<<<<<<< feature/cancel-booking
     BookingStatus status;
     private Performance performance;
+=======
+    private BookingStatus status;
+    private Student student;
+    private BookingStatus bookingStatus;
+
+>>>>>>> Main
 
     /**
      * Constructs a new Booking with the specified details.
@@ -25,18 +32,23 @@ public class Booking {
      * @param bookingDateTime the date and time the booking was made
      * @param status the status of the booking
      */
+<<<<<<< feature/cancel-booking
 
     private Student student;
     //^added (refer solution cw1) corresponds to a booking that does not belong to the student
 
     public Booking(long bookingNumber, int numTickets, double amountPaid,
                    LocalDateTime bookingDateTime, BookingStatus status, Student student, Performance performance) {
+=======
+    public Booking(Student student, long bookingNumber, int numTickets, double amountPaid, LocalDateTime bookingDateTime, BookingStatus status) {
+>>>>>>> Main
         this.bookingNumber = bookingNumber;
         this.numTickets = numTickets;
         this.amountPaid = amountPaid;
         this.bookingDateTime = bookingDateTime;
         this.status = status;
         this.student = student;
+<<<<<<< feature/cancel-booking
         this.performance = performance;
     }
 
@@ -47,18 +59,21 @@ public class Booking {
 
     public Performance getPerformance() {
         return performance;
+=======
+        bookingStatus = BookingStatus.ACTIVE;
+>>>>>>> Main
     }
 
     public void cancelByStudent() {
-        // Implementation for student cancelling a booking
+        bookingStatus = BookingStatus.CANCELLEDBYSTUDENT;
     }
 
     public void cancelPaymentFailed() {
-        // Implementation for booking being cancelled due to failed payment
+        bookingStatus = BookingStatus.PAYMENTFAILED;
     }
 
     public void cancelByProvider() {
-        // Implementation for EP cancelling a booking
+        bookingStatus = BookingStatus.CANCELLEDBYPROVIDER;
     }
 
     public boolean checkBookedByStudent(String email) {
@@ -76,6 +91,7 @@ public class Booking {
         return null; // Placeholder return value
     }
 
+<<<<<<< feature/cancel-booking
     public long getBookingNumber() {
         return bookingNumber;
     }
@@ -96,5 +112,29 @@ public class Booking {
         return amountPaid;
     }
 
+=======
+
+    // getter
+    public int getNumTickets() {
+        return numTickets;
+    }
+
+    public String getStudentEmail() {
+        return student.getEmail();
+    }
+
+    public int getStudentPhone() {
+        return student.getPhoneNumber();
+    }
+
+    public double getTransactionAmount() {
+        return amountPaid;
+    }
+
+    public BookingStatus getBookingStatus () {
+        return bookingStatus;
+    }
+
+>>>>>>> Main
 
 }

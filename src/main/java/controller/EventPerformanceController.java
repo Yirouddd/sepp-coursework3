@@ -1,7 +1,7 @@
 package controller;
 
 import enums.BookingStatus;
-import enums.PerdformanceStatus;
+import enums.PerformanceStatus;
 import external.MockPaymentSystem;
 import external.PaymentSystem;
 import interfaces.TextUserInterface;
@@ -141,12 +141,12 @@ public class EventPerformanceController extends Controller {
             // sameEP == false
             if (performance.getEvent() == null ||
                 performance.getEvent().getOrganiserName() == null ||
-                !performance.getEvent().getOrganiser().equals(currentUser)) {
+                !performance.getEvent().getOrganiserName().equals(currentUser)) {
                 view.displayError("The performance with given number does not belong to you.");
                 continue;
             }
 
-            if (performance.getStatus() == PerdformanceStatus.CANCELLED) {
+            if (performance.getStatus() == PerformanceStatus.CANCELLED) {
                 view.displayError("This performance has already been cancelled.");
                 return;
             }
@@ -238,7 +238,7 @@ public class EventPerformanceController extends Controller {
 
     private Event getEventByTitle(String title) {
         for (Event e : events) {
-            if (e.getEventTitle() == title) {
+            if (e.getTitle() == title) {
                 return e;
             }
         }

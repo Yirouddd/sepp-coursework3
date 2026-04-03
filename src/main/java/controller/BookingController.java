@@ -7,6 +7,7 @@ import user.User;
 
 import interfaces.View;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +46,62 @@ public class BookingController extends Controller {
     }
 
     public void reviewPerformance() {
-        // Implementation for reviewing performance
+        //ask user which performance to review
+        String perfIDInput = view.getInput("Enter performance ID to review: ");
+        long performanceID;
+
+        try {
+            performanceID = Long.parseLong(perfIDInput);
+        } catch (NumberFormatException e) {
+            view.displayError("Invalid performance ID. Must be a number");
+            return;
+        }
+
+        //find performance
+        Performance performance = getPerformanceByID(performanceID);
+
+        if (performance == null) {
+            view.displayError("Performance not found");
+            return;
+        }
+
+        //check if performance has already happened
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime performanceStart = performance.getStartDateTime();
+
+        if (now.isBefore(performanceStart)) {
+            view.displayError("You can only review past performances");
+            return;
+        }
+
+        //get rating 1-5
+        String ratinInput = view.getInput("Enter rating (1-5 stars): ");
+        int rating;
+
+        try {
+            rating = Integer.parseInt(ratinInput);
+        } catch (NumberFormatException e) {
+            view.displayError("Invalid rating value. Must be a number");
+            return;
+        }
+
+        if (rating < 1 || rating > 5) {
+            view.displayError("Rating must be between 1 and 5.");
+            return;
+        }
+
+        //Get optional: comment
+        String comment = view.getInput("Enter review comment (press Enter to skip): ");
+
+        if (comment != null && comment.trim().isEmpty()) {
+            comment = null;
+        }
+
+        //Add review to performance
+        performance.review(rating, comment);
+
+        //display success
+        view.displaySuccess("Review submitted successfully");
     }
 
     public void cancelBooking() {
@@ -58,6 +114,11 @@ public class BookingController extends Controller {
 
     private Performance getPerformanceByID(long performanceID) {
         // Implementation for getting performanceID
+        for (Performance perf : performances) {
+            if (perf.getID() == performanceID) {
+                return perf;
+            }
+        }
         return null; // Placeholder return value
     }
 

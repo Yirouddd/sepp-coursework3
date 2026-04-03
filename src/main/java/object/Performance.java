@@ -169,7 +169,7 @@ public class Performance {
           }
         }
         return false;
-    }
+      }
 
     /**
      * Returns booking details for refund processing

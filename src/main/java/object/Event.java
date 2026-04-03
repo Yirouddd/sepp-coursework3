@@ -1,6 +1,7 @@
 package object;
 
 import enums.EventType;
+import user.EntertainmentProvider;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class Event{
     }
 
     public String getOrganiserName() {
-        return organiserName;
+        return entertainmentProvider.getOrgName();
     }
 
     public String getOrganiserEmail() {
@@ -133,7 +134,7 @@ public class Event{
         StringBuilder result = new StringBuilder();
         result.append("---Event Details---\n");
         result.append("Event ID: ").append(eventID).append("\n");
-        result.append("Title: ").append(eventTitle).append("\n");
+        result.append("Title: ").append(title).append("\n");
         result.append("Type: ").append(type).append("\n");
         result.append("Ticketed: ").append(isTicketed).append("\n");
         result.append("Organiser: ").append(organiserName).append(" - ").append(organiserEmail).append("\n");
@@ -150,12 +151,11 @@ public class Event{
         return eventID;
     }
 
-    public String getEventTitle() {
-        return eventTitle;
-    }
-
     public boolean isTicketed() {
         return isTicketed;
     }
 
+    public String getTitle() {
+        return title;
+    }
 }

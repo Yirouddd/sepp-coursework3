@@ -3,6 +3,7 @@ package object;
 import enums.PerdformanceStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -11,6 +12,7 @@ import java.util.Collection;
 
 public class Performance {
     private long performanceId;
+    private Event event;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Collection<String> performersNames;
@@ -25,10 +27,25 @@ public class Performance {
     private double sponsoredAmount;
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
-    PerdformanceStatus status;
+    private PerdformanceStatus status;
 
-    public Performance(long performanceId, LocalDateTime startDateTime, LocalDateTime endDateTime, Collection<String> performersNames, String venueAddress, int duration) {
+    private Collection<Booking> bookings;
+
+    public Performance(long performanceId,
+                       Event event,
+                       LocalDateTime startDateTime,
+                       LocalDateTime endDateTime,
+                       Collection<String> performersNames,
+                       String venueAddress,
+                       int venueCapacity,
+                       boolean venueIsOutdoor,
+                       boolean venueIsAllowsSmoking,
+                       int numTicketsTotal,
+                       int numTicketsSold,
+                       double ticketPrice
+                       ) {
         this.performanceId = performanceId;
+        this.event = event;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.performersNames = performersNames;
@@ -44,15 +61,16 @@ public class Performance {
         this.reviewsRatings = reviewsRatings;
         this.reviewsComments = reviewsComments;
         this.status = status;
+        this.bookings = new ArrayList<>();
     }
 
     public void cancel() {
-        // Implementation for canceling the performance
+        this.status = PerdformanceStatus.CANCELLED;
     }
 
     public boolean checkIfEventIsTicked() {
-        // Implementation for checking if the event is ticketed
-        return false; // Placeholder return value
+
+        return false;
     }
     
     public boolean checkIfTicketsLeft(int numTicketsToBuy) {
@@ -71,13 +89,11 @@ public class Performance {
     }
 
     public String getEventTitle() {
-        // Implementation for getting the event title
-        return ""; // Placeholder return value
+        return event.getTitle();
     }
 
     public boolean checkHasNotHappenedYet() {
-        // Implementation for checking if the performance has not happened yet
-        return false; // Placeholder return value
+        return startDateTime.isAfter(LocalDateTime.now());
     }
 
     public boolean checkCreatedByEP(String epEmail) {
@@ -86,8 +102,10 @@ public class Performance {
     }
 
     public boolean hasActiveBooking() {
-        // Implementation for checking if there are active bookings for the performance
-        return false; // Placeholder return value
+        if (numTicketsSold > 0){
+            return true;
+        }
+        return false;
     }
 
     public String getBookingDetailsForRefund() {
@@ -110,6 +128,29 @@ public class Performance {
     public String toString() {
         // Implementation for converting the performance details to a string representation
         return ""; // Placeholder return value
+    }
+
+    // helper functions
+    public Event getEvent() {
+        return event;
+    }
+
+    public PerdformanceStatus getStatus() {
+        return status;
+    }
+
+
+
+    public int getNumTicketsSold() {
+        return numTicketsSold;
+    }
+
+    public Collection<Booking> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(Collection<Booking> bookings) {
+        this.bookings = bookings;
     }
     
 }

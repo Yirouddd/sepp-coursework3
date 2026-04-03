@@ -24,11 +24,14 @@ public class BookingController extends Controller {
     private long nextBookingNumber;
     private List<Booking> bookings;
     private List<Performance> performances;
+    private View view;
 
     public BookingController(User currentUser, View view, List<Performance> performances) {
         this.nextBookingNumber = 1;
         this.bookings = new ArrayList<>();
         this.performances = performances;
+        this.view = view;
+        this.currentUser = currentUser;
     }
 
     // helper function which might help for bookPerformance, reviewPerformance,
@@ -44,8 +47,7 @@ public class BookingController extends Controller {
     }
 
     public void bookPerformance() {
-        View view = new TextUserInterface();
-        this.currentUser = UserController.currentUser;
+        View view = this.view;
 
         if (!ensureStudent()){return;}
         Student student = (Student) currentUser;
@@ -144,12 +146,16 @@ public class BookingController extends Controller {
     }
 
     private Performance getPerformanceByID(long performanceID) {
-        // Implementation for getting performanceID
-        return null; // Placeholder return value
+        for (Performance p : performances) {
+            if (p.getPerformanceId() == performanceID) {
+                return p;
+            }
+        }
+        return null;
     }
 
     private boolean checkIfBookingPossible(Performance performance, int numTickets) {
-        return performance.checkIfTicketsLeft;
+        return performance.checkIfTicketsLeft(numTickets);
     }
 
     private Collection<Booking> findBookingsByEventID(long eventID) {

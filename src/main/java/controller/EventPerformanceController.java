@@ -1,7 +1,7 @@
 package controller;
 
 import enums.BookingStatus;
-import enums.PerdformanceStatus;
+import enums.PerformanceStatus;
 import external.MockPaymentSystem;
 import external.PaymentSystem;
 import interfaces.TextUserInterface;
@@ -51,8 +51,10 @@ public class EventPerformanceController extends Controller {
         }
 
         Performance performance = null;
+        int attempts = 0;
 
-        while (performance == null) {
+        while (performance == null && attempts < 7) {
+            attempts++;
             try {
                 String input = view.getInput("Enter performance ID: ");
                 long performanceID = Long.parseLong(input);
@@ -63,6 +65,11 @@ public class EventPerformanceController extends Controller {
             } catch (NumberFormatException e) {
                 view.displayError("Invalid input. Please enter a number.");
             }
+        }
+
+        if (performance == null) {
+            view.displayError("Too many unsuccessful attempts were made");
+            return;
         }
 
         // show performance details
@@ -135,12 +142,12 @@ public class EventPerformanceController extends Controller {
             // sameEP == false
             if (performance.getEvent() == null ||
                 performance.getEvent().getOrganiserName() == null ||
-                !performance.getEvent().getOrganiser().equals(currentUser)) {
+                !performance.getEvent().getOrganiserName().equals(currentUser)) {
                 view.displayError("The performance with given number does not belong to you.");
                 continue;
             }
 
-            if (performance.getStatus() == PerdformanceStatus.CANCELLED) {
+            if (performance.getStatus() == PerformanceStatus.CANCELLED) {
                 view.displayError("This performance has already been cancelled.");
                 return;
             }

@@ -75,7 +75,7 @@ public class Event{
     }
 
     public String getOrganiserName() {
-        return entertainmentProvider.getOrgName();
+        return organiserName;
     }
 
     public String getOrganiserEmail() {
@@ -156,9 +156,8 @@ public class Event{
         return isTicketed;
     }
 
-    public String getTitle() {
+    public String getEventTitle() {
         return eventTitle;
     }
-
 
 }

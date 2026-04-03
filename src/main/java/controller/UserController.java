@@ -65,7 +65,12 @@ public class UserController extends Controller {
     }
 
     public void logout() {
-        // Implementation for user logout
+        if (checkCurrentUserIsGuest()){
+            view.displayError("No user is currently logged in");
+            return;
+        }
+        currentUser = null;
+        view.displaySuccess("Logout successful.");
     }
 
     public void registerEntertainmentProvider() {

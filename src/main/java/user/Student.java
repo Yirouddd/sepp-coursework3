@@ -23,6 +23,8 @@ public class Student extends User {
    */
   public Student(String email, String password, String name, int phoneNumber) {
     // name cannot be null or empty
+    super(email, password);
+
     assert name != null && !name.isEmpty();
     assert phoneNumber > 0 : "Phone number should be valid.";
 
@@ -39,6 +41,10 @@ public class Student extends User {
     assert booking != null : "Non-existent booking cannot be added.";
     bookings.add(booking);
       return List.of();
+  }
+
+  public int getPhoneNumber() {
+    return phoneNumber;
   }
 
   public StudentPreferences getStudentPreferences() {

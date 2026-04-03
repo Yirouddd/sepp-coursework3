@@ -1,9 +1,13 @@
 package controller;
 
+import enums.BookingStatus;
+import external.PaymentSystem;
 import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
+import object.Event;
 import user.User;
+import user.Student;
 
 import interfaces.View;
 
@@ -21,12 +25,14 @@ public class BookingController extends Controller {
     private long nextBookingNumber;
     private List<Booking> bookings;
     private List<Performance> performances;
+    private PaymentSystem paymentSystem;
 
-    public BookingController(User currentUser, View view, List<Performance> performances) {
-        super(currentUser, view); //added this line
+    public BookingController(User currentUser, View view, List<Performance> performances, PaymentSystem paymentSystem) {
+        super(currentUser, view);
         this.nextBookingNumber = 1;
         this.bookings = new ArrayList<>();
         this.performances = performances;
+        this.paymentSystem = paymentSystem;
     }
 
     // helper function which might help for bookPerformance, reviewPerformance,
@@ -106,10 +112,88 @@ public class BookingController extends Controller {
 
     public void cancelBooking() {
         // Implementation for cancelling a booking
-    }
+        //1. check if current user is a Student
+        if (!checkCurrentUserIsStudent()) {
+            view.displayError("Only students can cancel bookings.");
+            return;
+        }
 
-    private void addBooking(Booking b) {
+        //2. get booking number from user
+        String bookingNumInput = view.getInput("Enter booking number: ");
+        long bookingNumber;
+
+        try {
+            bookingNumber = Long.parseLong(bookingNumInput);
+        } catch (NumberFormatException e) {
+            view.displayError("Invalid booking number. Must be a number");
+            return;
+        }
+
+        //3. find the booking
+        Booking booking = getBookingByNumber(bookingNumber);
+
+        if (booking == null) {
+            view.displayError("Booking not found");
+            return;
+        }
+
+        //verify booking belongs to current student
+        if (!booking.getStudent().getEmail().equals(currentUser.getEmail())) {
+            view.displayError("You are not allowed to review this booking.");
+            return;
+        }
+
+        //4. check if booking is already cancelled
+        if (booking.getStatus() == BookingStatus.CANCELLEDBYSTUDENT ||
+                booking.getStatus() == BookingStatus.CANCELLEDBYPROVIDER) {
+            view.displayError("Booking is already cancelled.");
+            return;
+        }
+
+        // 5. get performance details
+        Performance performance = getPerformanceByID(booking.getPerformance().getID());
+
+        if (performance == null) {
+            view.displayError("Performance not found");
+            return;
+        }
+
+        //6. check if >24 hours before performance
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime performanceStart = performance.getStartDateTime();
+        long hoursUntilPerformance = java.time.temporal.ChronoUnit.HOURS.between(now, performanceStart);
+
+        if (hoursUntilPerformance <= 24) {
+            view.displayError("Cannot cancel within 24 hours of performance start.");
+            return;
+        }
+
+        //7. process refuned via PaymentSystem
+        boolean refundSucess = paymentSystem.processRefund(
+                booking.getNumTickets(),
+                performance.getEventTitle(),
+                currentUser.getEmail(),
+                ((Student) currentUser).getPhoneNumber(),
+                performance.getOrganiserEmail(),
+                booking.getAmountPaid(),
+                "" //no organiser message for student cancellation
+        );
+
+        if (!refundSucess) {
+            view.displayError("Refund failed. Booking not cancelled.");
+            return;
+        }
+
+        //update booking status and display success message
+        booking.setStatus(BookingStatus.CANCELLEDBYSTUDENT);
+        view.displaySuccess("Booking cancelled successfully. Refund of GBP" +
+                            booking.getAmountPaid() + "has been processed.");
+    }
+    public void addBooking(Booking b) {
         // Implementation for adding a booking
+        if (b != null) {
+            bookings.add(b);
+        }
     }
 
     private Performance getPerformanceByID(long performanceID) {
@@ -134,7 +218,12 @@ public class BookingController extends Controller {
 
     private Booking getBookingByNumber(long bookingNumber) {
         // Implementation for finding a booking by its eventID
-        return null; // Placeholder return value
+        for (Booking b : bookings) {
+            if (b.getBookingNumber() == bookingNumber) {
+                return b;
+            }
+        }
+        return null;
     }
 
 }

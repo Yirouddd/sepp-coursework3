@@ -25,8 +25,10 @@ public class EntertainmentProvider extends User {
      * @param name            the name of the entertainment provider
      * @param description     the description of the entertainment provider
      */
+
     public EntertainmentProvider(String email, String password, String orgName, String businessNumber, String name,
-            String description) {
+                                 String description) {
+        super(email, password);  // ← ADD THIS
         this.orgName = orgName;
         this.businessNumber = businessNumber;
         this.name = name;

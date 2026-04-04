@@ -6,18 +6,14 @@ import enums.PerformanceStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Performance class represents a performance of an event.
- * Contains all relevant details including id, time, performers, venue
- * tickets quantity and price, sponsorship and reviews
  */
-
 public class Performance {
     private long performanceId;
-    private long eventId;
-    private String eventTitle;
-    private String organiserEmail;
+    private Event event;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Collection<String> performersNames;
@@ -27,15 +23,17 @@ public class Performance {
     private boolean venueIsAllowsSmoking;
     private int numTicketsTotal;
     private int numTicketsSold;
-    private double ticketPrice;
+    private final double ticketPrice;
     private boolean isSponsored;
     private double sponsoredAmount;
     private Collection<Integer> reviewsRatings;
     private Collection<String> reviewsComments;
     private Collection<Booking> bookings;
-    PerformanceStatus performanceStatus;
-    private Event event;
+    private PerformanceStatus performanceStatus;
 
+    /**
+     * Constructs a performance.
+     */
     public Performance(long performanceId,
                        Event event,
                        LocalDateTime startDateTime,
@@ -52,8 +50,8 @@ public class Performance {
         this.event = event;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
-        this.performersNames = performersNames;
-        this.venueAddress = venueAddress;
+        this.performersNames = performersNames == null ? new ArrayList<>() : new ArrayList<>(performersNames);
+        this.venueAddress = venueAddress.trim();
         this.venueCapacity = venueCapacity;
         this.venueIsOutdoor = venueIsOutdoor;
         this.venueIsAllowsSmoking = venueIsAllowsSmoking;
@@ -61,7 +59,7 @@ public class Performance {
         this.numTicketsSold = 0;
         this.ticketPrice = ticketPrice;
         this.isSponsored = false;
-        this.sponsoredAmount = 0;
+        this.sponsoredAmount = 0.0;
         this.reviewsRatings = new ArrayList<>();
         this.reviewsComments = new ArrayList<>();
         this.bookings = new ArrayList<>();
@@ -69,40 +67,154 @@ public class Performance {
     }
 
     /**
-     * Cancels performance
+     * Cancels the performance.
      */
     public void cancel() {
-        this.performanceStatus = PerformanceStatus.CANCELLED;    }
+        this.performanceStatus = PerformanceStatus.CANCELLED;
+    }
 
     /**
-     * Checks if event is ticketed
-     * @return true if event is ticketed
+     * Checks whether the event is ticketed.
+     *
+     * @return true if ticketed
      */
     public boolean checkIfEventIsTicketed() {
         return event != null && event.isTicketed();
     }
 
     /**
-     * Checks if tickets are still left for purchase
-     * @param numTicketsToBuy number of tickets user wants to buy
-     * @return true if enough tickets remain
+     * Checks if enough tickets remain.
+     *
+     * @param numTicketsToBuy requested tickets
+     * @return true if enough remain
      */
     public boolean checkIfTicketsLeft(int numTicketsToBuy) {
-        // Implementation for checking if there are tickets left
         return (numTicketsTotal - numTicketsSold) >= numTicketsToBuy;
     }
 
     /**
-     * Returns the final ticket price
-     * Sponsorship is applied if necessary
-     * @return ticket price (after reductions if any)
+     * Final ticket price after sponsorship.
+     *
+     * @return final price
      */
     public double getFinalTicketPrice() {
-        // Implementation for calculating the final ticket price
-        if (isSponsored) {
-            return ticketPrice - sponsoredAmount;
+        double finalPrice = ticketPrice - sponsoredAmount;
+        return Math.max(0.0, finalPrice);
+    }
+
+    /**
+     * Returns organiser email.
+     *
+     * @return organiser email
+     */
+    public String getOrganiserEmail() {
+        return event.getOrganiserEmail();
+    }
+
+    /**
+     * Returns event id.
+     *
+     * @return event id
+     */
+    public long getEventId() {
+        return event.getEventID();
+    }
+
+    /**
+     * Returns event title.
+     *
+     * @return event title
+     */
+    public String getEventTitle() {
+        return event.getEventTitle();
+    }
+
+    /**
+     * Checks whether performance has not happened yet.
+     *
+     * @return true if current time is before start
+     */
+    public boolean checkHasNotHappenedYet() {
+        return startDateTime.isAfter(LocalDateTime.now());
+    }
+
+    /**
+     * Checks if this performance belongs to an EP email.
+     *
+     * @param epEmail provider email
+     * @return true if same provider
+     */
+    public boolean checkCreatedByEP(String epEmail) {
+        return epEmail != null
+                && event != null
+                && event.getOrganiserEmail() != null
+                && event.getOrganiserEmail().equalsIgnoreCase(epEmail);
+    }
+
+    /**
+     * Checks if there are active bookings.
+     *
+     * @return true if active booking exists
+     */
+    public boolean hasActiveBooking() {
+        for (Booking b : bookings) {
+            if (b.getBookingStatus() == BookingStatus.ACTIVE) {
+                return true;
+            }
         }
-        return ticketPrice;
+        return false;
+    }
+
+    /**
+     * Adds sponsorship.
+     *
+     * @param amount sponsorship amount
+     */
+    public void sponsor(double amount) {
+        if (!checkIfEventIsTicketed()) {
+            throw new IllegalArgumentException("Sponsorship cannot be applied to non-ticketed performances.");
+        }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Sponsorship must be positive.");
+        }
+
+        this.isSponsored = true;
+        this.sponsoredAmount += amount;
+    }
+
+    /**
+     * Adds a review.
+     *
+     * @param rating rating from 1 to 5
+     * @param comment comment text
+     */
+    public void review(int rating, String comment) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5.");
+        }
+
+        reviewsRatings.add(rating);
+        reviewsComments.add(comment == null ? "" : comment);
+    }
+
+    /**
+     * Adds a booking to this performance.
+     *
+     * @param b booking
+     */
+    public void addBooking(Booking b) {
+        if (b == null) {
+            throw new IllegalArgumentException("Booking cannot be null.");
+        }
+        if (!checkIfEventIsTicketed()) {
+            throw new IllegalStateException("Cannot book a non-ticketed performance.");
+        }
+        if (!checkIfTicketsLeft(b.getNumTickets())) {
+            throw new IllegalStateException("Not enough tickets left.");
+        }
+
+        bookings.add(b);
+        numTicketsSold += b.getNumTickets();
     }
 
     /**
@@ -119,177 +231,39 @@ public class Performance {
         }
     }
 
-    /**
-     * Gets email of the EP (organiser)
-     * @return email of the organiser
-     */
-    public String getOrganiserEmail() {
-        // Implementation for getting the organizer's email
-        return event.getOrganiserEmail();
-    }
-
-    /**
-     * Gets event ID of the corresponding event to the performance
-     * @return event ID
-     */
-    public long getEventId() {
-        return event.getEventID();
-    }
-    /**
-     * Gets event title of the corresponding event to the performance
-     * @return event title
-     */
-    public String getEventTitle() {
-        // Implementation for getting the event title
-        return event.getEventTitle();
-    }
-
-    /**
-     * Checks if the performance has not started yet
-     * @return true if current time is before startDateTime
-     */
-    public boolean checkHasNotHappenedYet() {
-        return startDateTime.isAfter(LocalDateTime.now());
-    }
-
-    /**
-     * Checks if the performance was created by the provided EP
-     * @param epEmail email of the corresponding entertainment provider
-     * @return true if the performance was created by a specific EP
-     */
-    public boolean checkCreatedByEP(String epEmail) {
-        return event != null
-                && event.getOrganiserEmail() != null
-                && event.getOrganiserEmail().equals(epEmail);
-    }
-
-    /**
-     * Checks if there are active bookings
-     * @return true if there are active bookings
-     */
-    public boolean hasActiveBooking() {
-        for (Booking b : bookings) {
-          if (b.getBookingStatus() == BookingStatus.ACTIVE) {
-              return true;
-          }
-        }
-        return false;
-      }
-
-    /**
-     * Returns booking details for refund processing
-     */
-    public String getBookingDetailsForRefund() {
-        // Implementation for getting booking details for refund processing
-        return ""; // Placeholder return value
-
-    }
-
-    /**
-     * Adds a sponsorship to the performance
-     * @param amount sponsorship amount
-     */
-    public void sponsor(double amount) {
-        // Implementation for sponsoring the performance
-        if (!checkIfEventIsTicketed()) {
-            throw new IllegalArgumentException("Sponsorship cannot be applied" +
-                    " to non-ticketed performances");
-        }
-        if (amount <= 0){
-            throw new IllegalArgumentException("Sponsorship must be positive");
-        }
-        this.isSponsored = true;
-        this.sponsoredAmount += amount;
-    }
-
-    /**
-     * Adds a review to the performance
-     * @param rating rating score
-     * @param comment review comment
-     */
-    public void review(int rating, String comment) {
-        // Implementation for adding a review to the performance
-        if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Rating must be between 0 and " +
-                    "5");
-        }
-        reviewsRatings.add(rating);
-        reviewsComments.add(comment != null ? comment : "");
-    }
-
-    /**
-     * Adds a booking to the performance
-     * @param b booking
-     */
-    public void addBooking(Booking b) {
-        // Implementation for adding a booking to the performance
-        /*
-        if (b == null) {
-            return;
-        }
-        int ticketsToBook = b.getNumTickets; // method in Booking
-        if (ticketsToBook <= 0) {
-            throw new IllegalArgumentException("Booking must have at least one ticket");
-        }
-        if ((numTicketsSold + ticketsToBook) > numTicketsTotal) {
-            throw new IllegalStateException("Booking exceeds available " +
-                    "tickets. Not enough tickets");
-        }
-
-        numTicketsSold += ticketsToBook;
-        bookings.add(b);
-        */
-    }
-
-    /**
-     * Converts the performance details to a string representation
-     * @return detailed performance info
-     */
+    @Override
     public String toString() {
         StringBuilder details = new StringBuilder();
 
         details.append("---Performance Details---\n");
         details.append("ID: ").append(performanceId).append("\n");
+        details.append("Event: ").append(getEventTitle()).append("\n");
         details.append("Start: ").append(startDateTime).append("\n");
         details.append("End: ").append(endDateTime).append("\n");
 
         details.append("Performers: ");
         if (performersNames.isEmpty()) {
             details.append("To be added\n");
-        }
-        else {
+        } else {
             details.append(String.join(", ", performersNames)).append("\n");
         }
 
         details.append("Venue: ").append(venueAddress).append("\n");
         details.append("Capacity: ").append(venueCapacity).append("\n");
-        if (venueIsOutdoor) {
-            details.append("Outdoor");
-        }
-        else {
-            details.append("Indoor");
-        }
-        if (venueIsAllowsSmoking) {
-            details.append("Smoking is allowed");
-        }
-        else {
-            details.append("Smoking is NOT allowed");
-        }
-
+        details.append("Venue type: ").append(venueIsOutdoor ? "Outdoor" : "Indoor").append("\n");
+        details.append("Smoking allowed: ").append(venueIsAllowsSmoking ? "Yes" : "No").append("\n");
         details.append("Tickets left: ").append(getTicketsLeft()).append("\n");
         details.append("Price: £").append(getFinalTicketPrice()).append("\n");
         details.append("Status: ").append(performanceStatus).append("\n");
 
         if (isSponsored) {
-            details.append("Sponsored: £").append(sponsoredAmount).append("\n");
+            details.append("Sponsored by: £").append(sponsoredAmount).append("\n");
         }
 
         if (reviewsRatings.isEmpty()) {
             details.append("No ratings yet.\n");
-        }
-        else {
-            details.append("Average rating: ").append(getAverageRating()).append(
-                    "\n");
+        } else {
+            details.append("Average rating: ").append(getAverageRating()).append("\n");
             details.append("Comments:\n");
             for (String r : reviewsComments) {
                 details.append(" - ").append(r).append("\n");
@@ -299,7 +273,6 @@ public class Performance {
         return details.toString();
     }
 
-    // getters
     public long getPerformanceId() {
         return performanceId;
     }
@@ -337,32 +310,26 @@ public class Performance {
     }
 
     /**
-     * Returns average rating for a performance
-     * @return average rating for the performance
+     * Returns average rating for this performance.
+     *
+     * @return average rating
      */
     public double getAverageRating() {
         if (reviewsRatings.isEmpty()) {
             return 0.0;
         }
+
         int total = 0;
-        for (int r : reviewsRatings) {
-            total += r;
+        for (int rating : reviewsRatings) {
+            total += rating;
         }
         return (double) total / reviewsRatings.size();
     }
 
-    /**
-     * Returns all ratings for the performance
-     * @return collection of ratings
-     */
     public Collection<Integer> getReviewsRatings() {
         return new ArrayList<>(reviewsRatings);
     }
 
-    /**
-     * Returns all comments for the performance
-     * @return collection of comments
-     */
     public Collection<String> getReviewsComments() {
         return new ArrayList<>(reviewsComments);
     }
@@ -375,13 +342,11 @@ public class Performance {
         return event;
     }
 
-    public Collection<Booking> getBookings () {
-        return bookings;
+    public Collection<Booking> getBookings() {
+        return new ArrayList<>(bookings);
     }
 
-    public String getVenueAddress () {
+    public String getVenueAddress() {
         return venueAddress;
     }
-
-
 }

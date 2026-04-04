@@ -47,12 +47,19 @@ public class MenuController extends Controller {
         SPONSOR_PERFORMANCE
     }
 
+    /**
+     * Constructs MenuController.
+     *
+     * @param view UI view
+     * @param preregistedUsersFilePath student data file
+     * @param preregistedAdminFilePath admin data file
+     */
     public MenuController(View view, String preregistedUsersFilePath, String preregistedAdminFilePath) {
         this.view = view;
 
         userController = new UserController(view, preregistedUsersFilePath, preregistedAdminFilePath);
         eventPerformanceController = new EventPerformanceController(view);
-        bookingController = new BookingController(view);
+        bookingController = new BookingController(view, eventPerformanceController);
     }
 
     // main Menu decides which menu to show depend on the current user role.

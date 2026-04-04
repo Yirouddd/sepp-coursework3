@@ -1,6 +1,8 @@
 package controller;
 
 import enums.BookingStatus;
+import enums.PerformanceStatus;
+import external.MockPaymentSystem;
 import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
@@ -20,21 +22,133 @@ import java.time.LocalDateTime;
  */
 public class BookingController extends Controller {
     private long nextBookingNumber;
-    private static Collection<Booking> bookings =new ArrayList<>();
-    private Collection<Performance> performances;
-
+    private static Collection<Booking> bookings;
     private View view;
+    private PaymentSystem paymentSystem;
+    private EventPerformanceController eventPerformanceController;
 
-    public BookingController(View view) {
+    /**
+     * Constructs BookingController.
+     *
+     * @param view UI view
+     * @param eventPerformanceController shared event/performance controller
+     */
+    public BookingController(View view, EventPerformanceController eventPerformanceController) {
         this.nextBookingNumber = 1;
+        this.view = view;
         this.bookings = new ArrayList<>();
-        this.performances = performances;
-        this.view = view;
-        this.currentUser = currentUser;
+        this.paymentSystem = new MockPaymentSystem();
+        this.eventPerformanceController = eventPerformanceController;
 
-        this.view = view;
-        bookings = new ArrayList<>();
-        performances = new ArrayList<>();
+    }
+
+    /**
+     * Shared helper to ensure current user is a student.
+     *
+     * @return true if current user is student
+     */
+    private boolean ensureStudent() {
+        View view = new TextUserInterface();
+        if (!checkCurrentUserIsStudent()) {
+            view.displayError("Only students can perform this action.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Books a performance.
+     */
+    public void bookPerformance() {
+        if (!ensureStudent()){
+            return;
+        }
+
+        Student student = (Student) currentUser;
+        Performance performance = null;
+
+        while (performance == null) {
+            try {
+                long performanceID = Long.parseLong(view.getInput("Enter performance ID: "));
+                performance = getPerformanceByID(performanceID);
+
+                if (performance == null) {
+                    view.displayError("Invalid performance ID.");
+                    continue;
+                }
+
+                if (!performance.checkIfEventIsTicketed()) {
+                    view.displayError("This performance is not ticketed, so no booking is needed.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid numeric performance ID.");
+            }
+        }
+
+        int numTickets;
+        try {
+            numTickets = Integer.parseInt(view.getInput("Enter number of tickets: "));
+        } catch (NumberFormatException e) {
+            view.displayError("Number of tickets must be a valid integer.");
+            return;
+        }
+
+        if (!checkIfBookingPossible(performance, numTickets)) {
+            view.displayError("Not enough tickets available.");
+            return;
+        }
+
+        double totalCost = performance.getFinalTicketPrice() * numTickets;
+
+        boolean paymentSuccessful = paymentSystem.processPayment(
+                numTickets,
+                performance.getEventTitle(),
+                student.getEmail(),
+                student.getPhoneNumber(),
+                performance.getOrganiserEmail(),
+                totalCost
+        );
+
+        if (!paymentSuccessful) {
+            view.displayError("Payment was unsuccessful therefore booking unsuccessful.");
+            return;
+        }
+
+        Booking booking = new Booking(
+                student,
+                performance,
+                nextBookingNumber++,
+                numTickets,
+                totalCost,
+                LocalDateTime.now()
+        );
+
+        addBooking(booking);
+        performance.addBooking(booking);
+        student.addBooking(booking);
+
+        view.displaySuccess("Booking successful.");
+        view.displayBookingRecord(booking.generateBookingRecord());
+    }
+
+    public void reviewPerformance() {
+        // Implementation for reviewing performance
+    }
+
+    public void cancelBooking() {
+        // Implementation for cancelling a booking
+    }
+
+    /**
+     * Adds booking to system store.
+     *
+     * @param b booking
+     */
+    private void addBooking(Booking b) {
+        if (b != null) {
+            bookings.add(b);
+        }
     }
 
     /**
@@ -46,139 +160,87 @@ public class BookingController extends Controller {
         bookings.remove(booking);
     }
 
+    /**
+     * Looks up performance by id using shared performance controller.
+     *
+     * @param performanceID performance id
+     * @return performance or null
+     */
+    private Performance getPerformanceByID(long performanceID) {
+        return eventPerformanceController.findPerformanceById(performanceID);
+    }
 
-    // helper function which might help for bookPerformance, reviewPerformance,
-    // cancelBooking
-    // might not be used, just reduces duplication of code
-    private boolean ensureStudent() {
-        View view = new TextUserInterface();
-        if (!checkCurrentUserIsStudent()) {
-            view.displayError("Only students can perform this action.");
+    /**
+     * Checks whether booking can proceed.
+     *
+     * @param performance performance
+     * @param numTickets requested tickets
+     * @return true if booking is allowed
+     */
+    private boolean checkIfBookingPossible(Performance performance, int numTickets) {
+        if (performance == null) {
+            view.displayError("Performance does not exist.");
             return false;
         }
+
+        if (performance.getStatus() != PerformanceStatus.ACTIVE) {
+            view.displayError("Cancelled performances cannot be booked.");
+            return false;
+        }
+
+        if (!performance.checkHasNotHappenedYet()) {
+            view.displayError("Cannot book a performance that has already started or ended.");
+            return false;
+        }
+
+        if (numTickets <= 0) {
+            view.displayError("Number of tickets must be positive.");
+            return false;
+        }
+
+        if (!performance.checkIfEventIsTicketed()) {
+            view.displayError("This performance is not ticketed.");
+            return false;
+        }
+
+        if (!performance.checkIfTicketsLeft(numTickets)) {
+            view.displayError("Not enough tickets left.");
+            return false;
+        }
+
         return true;
     }
 
-    public void bookPerformance() {
-        View view = this.view;
-
-        if (!ensureStudent()){return;}
-        Student student = (Student) currentUser;
-
-        Performance performance = null;
-        int numTickets;
-
-        while (performance == null) {
-            String input = view.getInput("Enter performance ID:");
-
-            long performanceID;
-            try {
-                performanceID = Long.parseLong(input.trim());
-            } catch (NumberFormatException e) {
-                view.displayError("Invalid performance ID. Please provide a correct performance ID.");
-                continue;
+    /**
+     * Finds bookings by event id.
+     *
+     * @param eventID event id
+     * @return matching bookings
+     */
+    private Collection<Booking> findBookingsByEventID(long eventID) {
+        Collection<Booking> result = new ArrayList<>();
+        for (Booking booking : bookings) {
+            if (booking.getPerformance().getEventId() == eventID) {
+                result.add(booking);
             }
-
-            Performance perf = getPerformanceByID(performanceID);
-
-            if (perf == null) {
-                view.displayError("Invalid performance ID. Please provide a correct performance ID.");
-                continue;
-            }
-
-            if (!perf.checkIfEventIsTicketed()) {
-                view.displaySuccess("This performance is non-ticketed and free to attend. No booking required.");
-                return;
-            }
-
-            performance = perf;
         }
-
-        try {
-            String input = view.getInput("Enter number of tickets:");
-            numTickets = Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            view.displayError("Invalid number of tickets entered.");
-            return;
-        }
-
-        if (!checkIfBookingPossible(performance, numTickets)) {
-            view.displayError("Not enough tickets available.");
-            return;
-        }
-
-        double totalCost = performance.getFinalTicketPrice() * numTickets;
-        boolean paymentSuccessful = PaymentSystem.processPayment(
-                numTickets,
-                performance.getEventTitle(),
-                student.getEmail(),
-                student.getPhoneNumber(),
-                "",
-                totalCost
-        );
-
-        if (!paymentSuccessful) {
-            view.displayError("Payment was unsuccessful therefore booking unsuccessful.");
-            return;
-        }
-
-        long bookingNumber = nextBookingNumber;
-
-        Booking booking = new Booking(
-                student,
-                bookingNumber,
-                numTickets,
-                totalCost,
-                LocalDateTime.now(),
-                BookingStatus.ACTIVE
-        );
-
-        addBooking(booking);
-        performance.addBooking(booking);
-        student.addBooking(booking);
-
-        view.displayBookingRecord(
-                "Booking confirmed!\n" +
-                "Booking Number: " + bookingNumber + "\n" +
-                "Event: " + performance.getEventTitle() + "\n" +
-                "Tickets: " + numTickets + "\n" +
-                "Total Paid: £" + totalCost
-        );
+        return result;
     }
 
-    public void reviewPerformance() {
-        // Implementation for reviewing performance
-    }
-
-    public void cancelBooking() {
-        // Implementation for cancelling a booking
-    }
-
-    private void addBooking(Booking b) {
-        // Implementation for adding a booking
-    }
-
-    private Performance getPerformanceByID(long performanceID) {
-        for (Performance p : performances) {
-            if (p.getPerformanceId() == performanceID) {
-                return p;
+    /**
+     * Gets booking by booking number.
+     *
+     * @param bookingNumber booking number
+     * @return booking or null
+     */
+    private Booking getBookingByNumber(long bookingNumber) {
+        for (Booking booking : bookings) {
+            if (booking.getBookingNumber() == bookingNumber) {
+                return booking;
             }
         }
         return null;
     }
 
-    private boolean checkIfBookingPossible(Performance performance, int numTickets) {
-        return performance.checkIfTicketsLeft(numTickets);
-    }
-
-    private Collection<Booking> findBookingsByEventID(long eventID) {
-        // Implementation for finding a booking by its eventID
-        return null; // Placeholder return value
-    }
-
-    private Booking getBookingByNumber(long bookingNumber) {
-        // Implementation for finding a booking by its eventID
-        return null; // Placeholder return value
-    }
 
 }

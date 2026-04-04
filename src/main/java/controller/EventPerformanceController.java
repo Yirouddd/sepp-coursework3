@@ -455,4 +455,14 @@ public class EventPerformanceController extends Controller {
         }
         return null;
     }
+
+    /**
+     * Public lookup for performance by id.
+     *
+     * @param performanceID performance id
+     * @return performance or null
+     */
+    public Performance findPerformanceById(long performanceID) {
+        return getPerformanceByID(performanceID);
+    }
 }

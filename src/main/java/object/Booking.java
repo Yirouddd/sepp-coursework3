@@ -28,7 +28,7 @@ public class Booking {
      * @param numTickets number of tickets
      * @param amountPaid total amount paid
      */
-    public Booking(Student student, Performance performance, int numTickets, double amountPaid) {
+    public Booking(Student student, Performance performance, long bookingNumber, int numTickets, double amountPaid, LocalDateTime bookingDateTime) {
         this.student = student;
         this.performance = performance;
         this.numTickets = numTickets;
@@ -163,5 +163,9 @@ public class Booking {
      */
     public Student getStudent() {
         return student;
+    }
+
+    public Performance getPerformance() {
+        return performance;
     }
 }

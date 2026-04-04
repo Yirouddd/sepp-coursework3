@@ -4,35 +4,45 @@ import enums.BookingStatus;
 import enums.PerformanceStatus;
 import external.MockPaymentSystem;
 import external.PaymentSystem;
-import interfaces.TextUserInterface;
 import interfaces.View;
 import object.Booking;
+import user.EntertainmentProvider;
+import user.Student;
+import user.StudentPreferences;
 import user.User;
 import object.Event;
 import object.Performance;
 
-import interfaces.View;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
-
+/**
+ * Handles event and performance related use cases.
+ */
 public class EventPerformanceController extends Controller {
-
     private long nextEventID;
     private long nextPerformanceID;
 
-    private List<Event> events;
-    private List<Performance> performances;
+    private Collection<Event> events;
+    private Collection<Performance> performances;
 
     private View view;
+    private PaymentSystem paymentSystem;
 
-    public EventPerformanceController(User currentUser, View view) {
+    /**
+     * Constructs the controller.
+     *
+     * @param view UI view
+     */
+    public EventPerformanceController(View view) {
         this.nextEventID = 1;
         this.nextPerformanceID = 1;
+        this.view = view;
         this.events = new ArrayList<>();
         this.performances = new ArrayList<>();
-        this.view = view;
+        this.paymentSystem = new MockPaymentSystem();
     }
 
     public Event createEvent() {
@@ -40,10 +50,102 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
-    public void searchforPerformances() {
+    /**
+     * Searches for performances on a date.
+     */
+    public void searchForPerformances() {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
+        LocalDate targetDate = null;
+
+        // 1a: keep asking until the date format is correct
+        while (targetDate == null) {
+            String targetDateRow = view.getInput("Please enter a date (yyyy-MM-dd): ");
+
+            try {
+                targetDate = LocalDate.parse(targetDateRow, inputFormatter);
+            } catch (DateTimeParseException e) {
+                view.displayError("Invalid date format. Please use yyyy-MM-dd.");
+            }
+        }
+
+        // Step 1: find all performances on the target date
+        List<Performance> specificPerformances = new ArrayList<>();
+
+        for (Performance performance : performances) {
+            if (performance == null || performance.getStatus() != PerformanceStatus.ACTIVE) {
+                continue;
+            }
+            LocalDate startDate = performance.getStartDateTime().toLocalDate();
+            LocalDate endDate = performance.getEndDateTime().toLocalDate();
+
+            // performance is on the target date if the target date falls within [startDate, endDate]
+            if (!startDate.isAfter(targetDate) && !endDate.isBefore(targetDate)) {
+                specificPerformances.add(performance);
+            }
+        }
+
+        // 1b: no performances on the provided date
+        if (specificPerformances.isEmpty()) {
+            view.displayError("There are no performances on " + targetDate + ".");
+            return;
+        }
+
+        // 1c: if current user is a student with preferences, matching events go first
+        User user = getCurrentUser();
+        if (user instanceof Student) {
+            Student student = (Student) user;
+            StudentPreferences preferences = student.getStudentPreferences();
+
+            specificPerformances.sort(new Comparator<Performance>() {
+                @Override
+                public int compare(Performance p1, Performance p2) {
+                    Event e1 = getEventByID(p1.getEventId());
+                    Event e2 = getEventByID(p2.getEventId());
+
+                    boolean match1 = e1 != null && preferences.matchesStudentPreference(e1.getEventType());
+                    boolean match2 = e2 != null && preferences.matchesStudentPreference(e2.getEventType());
+
+                    if (match1 && !match2) {
+                        return -1;
+                    }
+                    if (!match1 && match2) {
+                        return 1;
+                    }
+                    return p1.getStartDateTime().compareTo(p2.getStartDateTime());
+                }
+            });
+        } else {
+            specificPerformances.sort(Comparator.comparing(Performance::getStartDateTime));
+        }
+
+        // display all performances
+        List<String> results = new ArrayList<>();
+
+        for (Performance performance : specificPerformances) {
+            Event event = getEventByID(performance.getEventId());
+            String organiserName = event == null ? "Unknown organiser" : event.getOrganiserName();
+            double eventAverageRating = event == null ? 0.0 : event.getAverageRatingOfPerformances();
+
+            String line = "Performance ID: " + performance.getPerformanceId()
+                    + " Event name: " + performance.getEventTitle()
+                    + " Time: " + performance.getStartDateTime().toLocalTime().format(timeFormatter)
+                    + " - " + performance.getEndDateTime().toLocalTime().format(timeFormatter)
+                    + " Venue of performance: " + performance.getVenueAddress()
+                    + " EP: " + organiserName
+                    + " Event average rating: " + String.format("%.2f", eventAverageRating);
+
+            results.add(line);
+        }
+
+        view.displaySuccess("Performances on " + targetDate + ":");
+        view.displayListOfPerformances(results);
     }
 
+    /**
+     * Views full details of a performance and its event.
+     */
     public void viewPerformance() {
         if (performances.isEmpty()) {
             view.displayError("No performances available.");
@@ -59,6 +161,7 @@ public class EventPerformanceController extends Controller {
                 String input = view.getInput("Enter performance ID: ");
                 long performanceID = Long.parseLong(input);
                 performance = getPerformanceByID(performanceID);
+
                 if (performance == null) {
                     view.displayError("Invalid ID. Please try again.");
                 }
@@ -80,25 +183,22 @@ public class EventPerformanceController extends Controller {
 
         if (event == null) {
             view.displayError("Associated event not found");
+            return;
         }
 
         // show event details
         view.displaySuccess("\n---Event Details---");
-        assert event != null;
         view.displaySuccess(event.toString());
 
         // show average rating for the event
         double averageRating = event.getAverageRatingOfPerformances();
-        view.displaySuccess("Event average rating: " + averageRating);
+        view.displaySuccess("Event average rating: " + String.format("%.2f", averageRating));
 
         // show all reviews for the event
-        List<String> allReviews =
-                new ArrayList<>(event.getAllPerformanceReviews());
-
+        Collection<String> allReviews = event.getAllPerformanceReviews();
         if (allReviews.isEmpty()) {
             view.displaySuccess("No reviews were added to this event yet");
-        }
-        else {
+        } else {
             view.displaySuccess("All reviews for the event: ");
             for (String review : allReviews) {
                 view.displaySuccess(" - " + review);
@@ -106,19 +206,24 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Cancels a performance owned by the current provider.
+     * Notifies  and refunds all the students
+     */
     public void cancelPerformance() {
-        View view = new TextUserInterface();
-        PaymentSystem paymentSystem = new MockPaymentSystem();
+        if (!checkCurrentUserIsEntertainmentProvider()) {
+            view.displayError("Only entertainment providers can cancel performances.");
+            return;
+        }
 
-        Performance performance;
-        String organiserMessage;
+        Performance performance = null;
+        String organiserMessage = null;
 
-        while (true){
-
+        while (true) {
             String performanceInput = view.getInput("Enter performance ID to cancel: ");
 
             // performance == null
-            if (performanceInput == null || performanceInput.trim().isEmpty()){
+            if (performanceInput.trim().isEmpty()) {
                 view.displayError("Performance ID cannot be empty.");
                 continue;
             }
@@ -139,10 +244,7 @@ public class EventPerformanceController extends Controller {
                 continue;
             }
 
-            // sameEP == false
-            if (performance.getEvent() == null ||
-                performance.getEvent().getOrganiserName() == null ||
-                !performance.getEvent().getOrganiserName().equals(currentUser)) {
+            if (!performance.checkCreatedByEP(currentUser.getEmail())) {
                 view.displayError("The performance with given number does not belong to you.");
                 continue;
             }
@@ -161,6 +263,7 @@ public class EventPerformanceController extends Controller {
         }
 
         // message
+
         while (true) {
             organiserMessage = view.getInput("Provide a cancellation message for affected students: ");
 
@@ -172,11 +275,20 @@ public class EventPerformanceController extends Controller {
         }
 
 
-
         if (performance.hasActiveBooking()) {
+            while (true) {
+                organiserMessage = view.getInput("Provide a cancellation message for affected students: ").trim();
+                if (organiserMessage.isEmpty()) {
+                    view.displayError("Please provide a non-empty message for the students.");
+                    continue;
+                }
+                break;
+            }
 
-            for (Booking booking : performance.getBookings()){
-                if (booking == null || (booking.getBookingStatus() != BookingStatus.ACTIVE)) {
+            List<Booking> bookingsCopy = new ArrayList<>(performance.getBookings());
+
+            for (Booking booking : bookingsCopy) {
+                if (booking == null || booking.getBookingStatus() != BookingStatus.ACTIVE) {
                     continue;
                 }
 
@@ -184,24 +296,49 @@ public class EventPerformanceController extends Controller {
                         booking.getNumTickets(),
                         performance.getEventTitle(),
                         booking.getStudentEmail(),
-                        booking.getStudentPhone(),
+                        booking.getStudentPhoneNumber(),
                         performance.getOrganiserEmail(),
                         booking.getTransactionAmount(),
                         organiserMessage
                 );
 
-                // 1c.2a: one refund failed -> whole cancellation fails
                 if (!refundSuccess) {
-                    view.displayError("The performance could not be cancelled because refund processing was unsuccessful.");
+                    view.displayError("The performance could not be cancelled because refund processing failed.");
                     return;
                 }
+            }
+
+            for (Booking booking : bookingsCopy) {
+                if (booking == null || booking.getBookingStatus() != BookingStatus.ACTIVE) {
+                    continue;
+                }
+
                 booking.cancelByProvider();
+                booking.getStudent().removeBooking(booking);
+                performance.removeBooking(booking);
+                BookingController.removeBookingFromSystem(booking);
             }
         }
-        // 1 / 1c.3: all refunds successful or no bookings
+
         performance.cancel();
-        view.displaySuccess("The performance has been cancelled and any refunds have been processed.");
+        performances.remove(performance);
+
+        Event event = performance.getEvent();
+        if (event != null) {
+            event.removePerformance(performance);
+
+            if (event.getPerformances().isEmpty()) {
+                events.remove(event);
+
+                if (currentUser instanceof EntertainmentProvider) {
+                    ((EntertainmentProvider) currentUser).removeEvent(event);
+                }
+            }
+        }
+
+        view.displaySuccess("The performance has been cancelled and refunds have been processed if required.");
     }
+
 
     private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
         if (!performance.checkIfEventIsTicketed()) {
@@ -289,11 +426,6 @@ public class EventPerformanceController extends Controller {
     public void addPerformance(Performance p) {
         if (p != null) {
             performances.add(p);
-
-            Event e = getEventByID(p.getEventId());
-            if (e != null) {
-                e.addPerformance(p);
-            }
         }
     }
 

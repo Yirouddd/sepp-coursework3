@@ -2,42 +2,51 @@ package interfaces;
 
 import java.util.Collection;
 
+/**
+ * View interface for text-based interaction.
+ */
 public interface View {
 
     /**
-     * Gets input from the user with a prompt message
+     * Gets input from the user with a prompt.
      *
-     * @return the user's input as a String
+     * @param inputPrompt prompt to display
+     * @return user input
      */
     public String getInput(String inputPrompt);
 
     /**
-     * Displays a success message to the user
-     * @param successMessage the success message to display
+     * Displays a success/info message.
+     *
+     * @param successMessage message to display
      */
     public void displaySuccess(String successMessage);
 
     /**
-     * Displays an error message to the user
-     * @param errorMessage the error message to display
+     * Displays an error message.
+     *
+     * @param errorMessage message to display
      */
     public void displayError(String errorMessage);
 
     /**
-     * Displays a list of all performances
-     * @param listOfPerformanceInfo collection of performance information strings
+     * Displays a list of performances.
+     *
+     * @param listOfPerformanceInfo performance info strings
      */
     public void displayListOfPerformances(Collection<String> listOfPerformanceInfo);
 
     /**
-     * Displays details of a specific performance
-     * @param performanceInfo the performance information to display
+     * Displays one performance's details.
+     *
+     * @param performanceInfo performance details
      */
     public void displaySpecificPerformance(String performanceInfo);
 
     /**
-     * Displays a booking record
-     * @param bookingRecord the booking record to display
+     * Displays a booking record.
+     *
+     * @param bookingRecord booking record
      */
     public void displayBookingRecord(String bookingRecord);
 }

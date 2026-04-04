@@ -16,23 +16,36 @@ import java.util.Collection;
 import java.time.LocalDateTime;
 
 /**
- * BookingController handles actions related to bookings.
+ * Handles booking-related use cases.
  */
 public class BookingController extends Controller {
-    // main.user.StudentPreferences studentPreferences;
-
     private long nextBookingNumber;
-    private List<Booking> bookings;
-    private List<Performance> performances;
+    private static Collection<Booking> bookings =new ArrayList<>();
+    private Collection<Performance> performances;
+
     private View view;
 
-    public BookingController(User currentUser, View view, List<Performance> performances) {
+    public BookingController(View view) {
         this.nextBookingNumber = 1;
         this.bookings = new ArrayList<>();
         this.performances = performances;
         this.view = view;
         this.currentUser = currentUser;
+
+        this.view = view;
+        bookings = new ArrayList<>();
+        performances = new ArrayList<>();
     }
+
+    /**
+     * Removes booking from shared booking store.
+     *
+     * @param booking booking to remove
+     */
+    public static void removeBookingFromSystem(Booking booking) {
+        bookings.remove(booking);
+    }
+
 
     // helper function which might help for bookPerformance, reviewPerformance,
     // cancelBooking

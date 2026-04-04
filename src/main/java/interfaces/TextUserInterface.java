@@ -3,14 +3,16 @@ package interfaces;
 import java.util.Collection;
 import java.util.Scanner;
 
+/**
+ * Text-based console UI implementation.
+ */
 public class TextUserInterface implements View {
     private Scanner scanner = new Scanner(System.in);
 
     @Override
     public String getInput(String inputPrompt) {
         System.out.println(inputPrompt);
-        String input = scanner.nextLine().trim();
-        return input;
+        return scanner.nextLine().trim();
     }
 
     @Override

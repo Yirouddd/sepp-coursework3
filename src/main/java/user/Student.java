@@ -8,52 +8,66 @@ import java.util.ArrayList;
  * Student class represents a student with a name.
  */
 public class Student extends User {
-  private String name;
-  private int phoneNumber;
-  private List<Booking> bookings;
-  private StudentPreferences studentPreferences;
+    private String name;
+    private int phoneNumber;
+    private List<Booking> bookings;
+    private StudentPreferences studentPreferences;
 
-  /**
-   * Constructs a new Student with the specified details.
-   * Email and password are inherited from abstract class User.
-   *
-   * @param email    the student email (from User class, used as username)
-   * @param password the student password (from User abstract class)
-   * @param name     the name of the student
-   */
-  public Student(String email, String password, String name, int phoneNumber) {
-    // name cannot be null or empty
-    assert name != null && !name.isEmpty();
-    assert phoneNumber > 0 : "Phone number should be valid.";
+    /**
+     * Constructs a new Student.
+     *
+     * @param email student email
+     * @param password student password
+     * @param name student name
+     * @param phoneNumber student phone number
+     */
+    public Student(String email, String password, String name, int phoneNumber) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.bookings = new ArrayList<>();
+        this.studentPreferences = new StudentPreferences(false,false, false, false, false, false);
+        setEmail(email);
+        setPassword(password);
+    }
 
-    this.name = name;
-    this.phoneNumber = phoneNumber;
-    this.bookings = new ArrayList<>();
-    this.studentPreferences = new StudentPreferences(false, false, false, false, false);
-  }
+    /**
+     * Adds a booking to the student record.
+     *
+     * @param booking booking to add
+     */
+    public void addBooking(Booking booking) {
+      bookings.add(booking);
+    }
 
-  /**
-   * 
-   */
-  public List<Booking> addBooking(Booking booking) {
-    assert booking != null : "Non-existent booking cannot be added.";
-    bookings.add(booking);
-      return List.of();
-  }
+    /**
+     * Removes a booking from the student record.
+     *
+     * @param booking booking to remove
+     */
+    public void removeBooking(Booking booking) {
+        bookings.remove(booking);
+    }
 
-  public StudentPreferences getStudentPreferences() {
-    return studentPreferences;
-  }
+    public StudentPreferences getStudentPreferences() {
+      return studentPreferences;
+    }
 
 
-  // getter
+      /**
+       * Gets student's Phone number
+       *
+       * @return phoneNumber student Phone number
+       */
+      public int getPhoneNumber () {
+          return phoneNumber;
+      }
 
-  @Override
-  public String getEmail() {
-    return super.getEmail();
-  }
-
-  public int getPhoneNumber () {
-    return phoneNumber;
-  }
+    /**
+     * Gets student's name
+     *
+     * @return name student's name
+     */
+    public String getName() {
+        return name;
+    }
 }

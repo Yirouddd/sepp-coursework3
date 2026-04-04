@@ -32,7 +32,7 @@ public abstract class Controller {
   /**
    * Check if the current user is an admin staff
    * 
-   * @return true if the current user is an admin staff,
+   * @gitreturn true if the current user is an admin staff,
    *         false otherwise
    */
 

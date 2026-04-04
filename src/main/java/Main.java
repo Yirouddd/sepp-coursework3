@@ -8,8 +8,8 @@ public class Main{
         String adminFilePath = "src/main/resources/admins.txt";
 
         View appView = new TextUserInterface();
-
-
+        MenuController menuController = new MenuController(appView, userFilePath, adminFilePath);
+        menuController.mainMenu();
     }
 
 }

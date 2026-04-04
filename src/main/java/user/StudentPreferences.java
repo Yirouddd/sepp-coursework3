@@ -1,4 +1,7 @@
 package user;
+
+import enums.EventType;
+
 public class StudentPreferences {
     public boolean preferMusicEvents;
     public boolean preferTheatreEvents;
@@ -7,7 +10,12 @@ public class StudentPreferences {
     public boolean preferSportEvents;
     public boolean preferGameEvents;
 
-    public StudentPreferences(boolean preferMusicEvents, boolean preferTheatreEvents, boolean preferDanceEvents, boolean preferMovieEvents, boolean preferSportsEvents) {
+    public StudentPreferences(boolean preferMusicEvents,
+                              boolean preferTheatreEvents,
+                              boolean preferDanceEvents,
+                              boolean preferMovieEvents,
+                              boolean preferSportEvents,
+                              boolean preferGameEvents) {
         this.preferMusicEvents = preferMusicEvents;
         this.preferTheatreEvents = preferTheatreEvents;
         this.preferDanceEvents = preferDanceEvents;
@@ -16,9 +24,28 @@ public class StudentPreferences {
         this.preferGameEvents = preferGameEvents;
     }
 
+    public boolean matchesStudentPreference(EventType eventType) {
+        if (eventType == null) {
+            return false;
+        }
+
+        switch (eventType) {
+            case Music:
+                return preferMusicEvents;
+            case Theatre:
+                return preferTheatreEvents;
+            case Dance:
+                return preferDanceEvents;
+            case Movie:
+                return preferMovieEvents;
+            case Sports:
+                return preferSportEvents;
+            default:
+                return false;
+        }
+    }
 
     public void updatePreferences(String studentRawStringPreferences) {
-        // Check if is null or empty
         if (studentRawStringPreferences == null || studentRawStringPreferences.trim().isEmpty()) {
             System.out.println("Invalid input: Preferences string cannot be null or empty.");
             return;
@@ -26,39 +53,32 @@ public class StudentPreferences {
 
         String[] separatePreferences = studentRawStringPreferences.split(",");
         for (String preference : separatePreferences) {
-            // Convert the raw string to lowercase for case-insensitive maching
-            String lowerCasePreferences = studentRawStringPreferences.toLowerCase().trim();
+            String lowerCasePreference = preference.toLowerCase().trim();
 
-            // Process the single preference
-            switch (lowerCasePreferences) {
+            switch (lowerCasePreference) {
                 case "music":
                     this.preferMusicEvents = true;
-                    System.out.println("Music preference updated to true.");
                     break;
                 case "theatre":
                     this.preferTheatreEvents = true;
-                    System.out.println("Theatre preference updated to true.");
                     break;
                 case "dance":
                     this.preferDanceEvents = true;
-                    System.out.println("Dance preference updated to true.");
                     break;
                 case "movie":
                     this.preferMovieEvents = true;
-                    System.out.println("Movie preference updated to true.");
                     break;
                 case "sport":
+                case "sports":
                     this.preferSportEvents = true;
-                    System.out.println("Sports preference updated to true.");
                     break;
                 case "game":
                     this.preferGameEvents = true;
-                    System.out.println("Game preference updated to true.");
+                    break;
                 default:
-                    System.out.println("Invalid preference: " + studentRawStringPreferences);
+                    System.out.println("Invalid preference: " + preference);
+                    break;
             }
         }
-
     }
-
 }

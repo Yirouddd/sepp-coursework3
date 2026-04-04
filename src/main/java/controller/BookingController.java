@@ -15,16 +15,19 @@ import java.util.Collection;
  * BookingController handles actions related to bookings.
  */
 public class BookingController extends Controller {
-    // main.user.StudentPreferences studentPreferences;
 
     private long nextBookingNumber;
-    private List<Booking> bookings;
-    private List<Performance> performances;
+    private Collection<Booking> bookings;
+    private Collection<Performance> performances;
 
-    public BookingController(User currentUser, View view, List<Performance> performances) {
+    private View view;
+
+    public BookingController(View view) {
         this.nextBookingNumber = 1;
-        this.bookings = new ArrayList<>();
-        this.performances = performances;
+
+        this.view = view;
+        bookings = new ArrayList<>();
+        performances = new ArrayList<>();
     }
 
     // helper function which might help for bookPerformance, reviewPerformance,

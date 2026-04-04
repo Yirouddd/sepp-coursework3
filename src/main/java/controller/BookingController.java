@@ -1,12 +1,16 @@
 package controller;
 
+import enums.BookingStatus;
+import external.MockPaymentSystem;
 import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
+import user.Student;
 import user.User;
 
 import interfaces.View;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +23,7 @@ public class BookingController extends Controller {
     private long nextBookingNumber;
     private Collection<Booking> bookings;
     private Collection<Performance> performances;
+
 
     private View view;
 
@@ -43,7 +48,90 @@ public class BookingController extends Controller {
     }
 
     public void bookPerformance() {
-        // Implementation for booking of performance
+        View view = this.view;
+
+        if (!ensureStudent()){return;}
+        Student student = (Student) currentUser;
+
+        Performance performance = null;
+        int numTickets;
+
+        while (performance == null) {
+            String input = view.getInput("Enter performance ID:");
+
+            long performanceID;
+            try {
+                performanceID = Long.parseLong(input.trim());
+            } catch (NumberFormatException e) {
+                view.displayError("Invalid performance ID. Please provide a correct performance ID.");
+                continue;
+            }
+
+            Performance perf = getPerformanceByID(performanceID);
+
+            if (perf == null) {
+                view.displayError("Invalid performance ID. Please provide a correct performance ID.");
+                continue;
+            }
+
+            if (!perf.checkIfEventIsTicketed()) {
+                view.displaySuccess("This performance is non-ticketed and free to attend. No booking required.");
+                return;
+            }
+
+            performance = perf;
+        }
+
+        try {
+            String input = view.getInput("Enter number of tickets:");
+            numTickets = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            view.displayError("Invalid number of tickets entered.");
+            return;
+        }
+
+        if (!checkIfBookingPossible(performance, numTickets)) {
+            view.displayError("Not enough tickets available.");
+            return;
+        }
+
+        double totalCost = performance.getFinalTicketPrice() * numTickets;
+        boolean paymentSuccessful = MockPaymentSystem.processPayment(
+                numTickets,
+                performance.getEventTitle(),
+                student.getEmail(),
+                student.getPhoneNumber(),
+                "",
+                totalCost
+        );
+
+        if (!paymentSuccessful) {
+            view.displayError("Payment was unsuccessful therefore booking unsuccessful.");
+            return;
+        }
+
+        long bookingNumber = nextBookingNumber;
+
+        Booking booking = new Booking(
+                student,
+                bookingNumber,
+                numTickets,
+                totalCost,
+                LocalDateTime.now(),
+                BookingStatus.ACTIVE
+        );
+
+        addBooking(booking);
+        performance.addBooking(booking);
+        student.addBooking(booking);
+
+        view.displayBookingRecord(
+                "Booking confirmed!\n" +
+                        "Booking Number: " + bookingNumber + "\n" +
+                        "Event: " + performance.getEventTitle() + "\n" +
+                        "Tickets: " + numTickets + "\n" +
+                        "Total Paid: £" + totalCost
+        );
     }
 
     public void reviewPerformance() {

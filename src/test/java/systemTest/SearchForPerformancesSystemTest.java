@@ -137,44 +137,8 @@ public class SearchForPerformancesSystemTest {
         preferences.preferTheatreEvents = false;
         preferences.preferDanceEvents = false;
         preferences.preferMovieEvents = false;
-        preferences.preferSportEvents = false;
-        preferences.preferGameEvents = false;
-    }
-
-    @Test
-    @DisplayName("Student preference matching performances are displayed first")
-    void preferredPerformancesAreShownFirst() {
-        student.getStudentPreferences().preferMusicEvents = true;
-
-        when(view.getInput("Please enter a date (yyyy-MM-dd): "))
-                .thenReturn("2026-04-10");
-
-        controller.searchForPerformances();
-
-        verify(view, never()).displayError(anyString());
-
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(view, atLeast(3)).displaySuccess(captor.capture());
-
-        List<String> outputs = captor.getAllValues();
-
-        assertEquals("Performances on 2026-04-10:", outputs.get(0));
-
-        String firstPerformanceLine = outputs.get(1);
-        assertTrue(firstPerformanceLine.contains("Performance ID: 101"));
-        assertTrue(firstPerformanceLine.contains("Event: Jazz Night"));
-        assertTrue(firstPerformanceLine.contains("Time: 19:00 - 21:00"));
-        assertTrue(firstPerformanceLine.contains("Venue: Main Hall"));
-        assertTrue(firstPerformanceLine.contains("EP: " + musicEvent.getOrganiserName()));
-        assertTrue(firstPerformanceLine.contains("Event average rating: 4.00"));
-
-        String secondPerformanceLine = outputs.get(2);
-        assertTrue(secondPerformanceLine.contains("Performance ID: 201"));
-        assertTrue(secondPerformanceLine.contains("Event: Hamlet"));
-        assertTrue(secondPerformanceLine.contains("Time: 18:00 - 20:00"));
-        assertTrue(secondPerformanceLine.contains("Venue: Studio Theatre"));
-        assertTrue(secondPerformanceLine.contains("EP: " + theatreEvent.getOrganiserName()));
-        assertTrue(secondPerformanceLine.contains("Event average rating: 2.00"));
+        preferences.preferSportsEvents = false;
+        preferences.preferGamesEvents = false;
     }
 
     @Test

@@ -106,6 +106,20 @@ public class Performance {
     }
 
     /**
+     * Removes a booking from this performance.
+     *
+     * @param b booking
+     */
+    public void removeBooking(Booking b) {
+        if (b != null && bookings.remove(b)) {
+            numTicketsSold -= b.getNumTickets();
+            if (numTicketsSold < 0) {
+                numTicketsSold = 0;
+            }
+        }
+    }
+
+    /**
      * Gets email of the EP (organiser)
      * @return email of the organiser
      */

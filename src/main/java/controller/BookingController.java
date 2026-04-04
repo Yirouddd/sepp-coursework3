@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * BookingController handles actions related to bookings.
+ * Handles booking-related use cases.
  */
 public class BookingController extends Controller {
-
     private long nextBookingNumber;
-    private Collection<Booking> bookings;
+    private static Collection<Booking> bookings =new ArrayList<>();
     private Collection<Performance> performances;
 
     private View view;
@@ -29,6 +28,16 @@ public class BookingController extends Controller {
         bookings = new ArrayList<>();
         performances = new ArrayList<>();
     }
+
+    /**
+     * Removes booking from shared booking store.
+     *
+     * @param booking booking to remove
+     */
+    public static void removeBookingFromSystem(Booking booking) {
+        bookings.remove(booking);
+    }
+
 
     // helper function which might help for bookPerformance, reviewPerformance,
     // cancelBooking

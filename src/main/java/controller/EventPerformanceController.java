@@ -7,32 +7,40 @@ import external.PaymentSystem;
 import interfaces.TextUserInterface;
 import interfaces.View;
 import object.Booking;
+import user.Student;
+import user.StudentPreferences;
 import user.User;
 import object.Event;
 import object.Performance;
 
 import interfaces.View;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 public class EventPerformanceController extends Controller {
 
     private long nextEventID;
     private long nextPerformanceID;
 
-    private List<Event> events;
-    private List<Performance> performances;
+    private Collection<Event> events;
+    private Collection<Performance> performances;
 
     private View view;
+    Performance performance;
+    PaymentSystem paymentSystem;
 
-    public EventPerformanceController(User currentUser, View view) {
+    // Constructor for testing
+    public EventPerformanceController(View view) {
         this.nextEventID = 1;
         this.nextPerformanceID = 1;
+
+        this.view = view;
         this.events = new ArrayList<>();
         this.performances = new ArrayList<>();
-        this.view = view;
+        paymentSystem = new MockPaymentSystem();
     }
 
     public Event createEvent() {
@@ -40,9 +48,95 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
-    public void searchforPerformances() {
+    public void searchForPerformances() {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
+        LocalDate targetDate = null;
+
+        // 1a: keep asking until the date format is correct
+        while (targetDate == null) {
+            String targetDateRow = view.getInput("Please enter a date (yyyy-MM-dd): ");
+
+            try {
+                targetDate = LocalDate.parse(targetDateRow, inputFormatter);
+            } catch (DateTimeParseException e) {
+                view.displayError("Invalid date format. Please use yyyy-MM-dd.");
+            }
+        }
+
+        // Step 1: find all performances on the target date
+        List<Performance> specificPerformance = new ArrayList<>();
+
+        for (Performance performance : performances) {
+            if (performance == null || performance.getStatus() != PerformanceStatus.ACTIVE) {
+                continue;
+            }
+            LocalDate startDate = performance.getStartDateTime().toLocalDate();
+            LocalDate endDate = performance.getEndDateTime().toLocalDate();
+
+            // performance is on the target date if the target date falls within [startDate, endDate]
+            if (!startDate.isAfter(targetDate) && !endDate.isBefore(targetDate)) {
+                specificPerformance.add(performance);
+            }
+        }
+
+        // 1b: no performances on the provided date
+        if (specificPerformance.isEmpty()) {
+            view.displayError("There are no performances on " + targetDate + ".");
+            return;
+        }
+
+        // 1c: if current user is a student with preferences, matching events go first
+        User user = getCurrentUser();
+        if (user instanceof Student) {
+            Student student = (Student) user;
+            StudentPreferences studentPreferences = student.getStudentPreferences();
+
+            if (studentPreferences != null) {
+                specificPerformance.sort(
+                        Comparator
+                                .comparingInt((Performance p) -> {
+                                    Event event = getEventByID(p.getEventId());
+                                    return (event != null &&
+                                            studentPreferences.matchesStudentPreference(event.getEventType())) ? 0 : 1;
+                                })
+                                .thenComparing(Performance::getStartDateTime)
+                );
+            } else {
+                specificPerformance.sort(Comparator.comparing(Performance::getStartDateTime));
+            }
+        } else {
+            specificPerformance.sort(Comparator.comparing(Performance::getStartDateTime));
+        }
+
+        // display all performances
+        view.displaySuccess("Performances on " + targetDate + ":");
+
+        for (Performance performance : specificPerformance) {
+            Event event = getEventByID(performance.getEventId());
+
+            String organiserName = "Unknown organiser";
+            double eventAverageRating = 0.0;
+
+            if (event != null) {
+                organiserName = event.getOrganiserName();
+                eventAverageRating = event.getAverageRatingOfPerformances();
+            }
+
+            String result =
+                    "Performance ID: " + performance.getPerformanceId()
+                            + " Event: " + performance.getEventTitle()
+                            + " Time: " + performance.getStartDateTime().toLocalTime().format(timeFormatter)
+                            + " - " + performance.getEndDateTime().toLocalTime().format(timeFormatter)
+                            + " Venue: " + performance.getVenueAddress()
+                            + " EP: " + organiserName
+                            + " Event average rating: " + String.format("%.2f", eventAverageRating);
+
+            view.displaySuccess(result);
+        }
     }
+
 
     public void viewPerformance() {
         if (performances.isEmpty()) {
@@ -107,9 +201,6 @@ public class EventPerformanceController extends Controller {
     }
 
     public void cancelPerformance() {
-        View view = new TextUserInterface();
-        PaymentSystem paymentSystem = new MockPaymentSystem();
-
         Performance performance;
         String organiserMessage;
 
@@ -289,11 +380,6 @@ public class EventPerformanceController extends Controller {
     public void addPerformance(Performance p) {
         if (p != null) {
             performances.add(p);
-
-            Event e = getEventByID(p.getEventId());
-            if (e != null) {
-                e.addPerformance(p);
-            }
         }
     }
 

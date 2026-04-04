@@ -36,29 +36,20 @@ public class Performance {
     PerformanceStatus performanceStatus;
     private Event event;
 
-    public Performance(long performanceId, long eventId,
-                       String eventTitle,LocalDateTime startDateTime,
+    public Performance(long performanceId,
+                       Event event,
+                       LocalDateTime startDateTime,
                        LocalDateTime endDateTime,
                        Collection<String> performersNames,
-                       String venueAddress, int venueCapacity,
-                       boolean venueIsOutdoor, boolean venueIsAllowsSmoking,
-                       int numTicketsTotal, double ticketPrice) {
-        // checks
-        assert performanceId > 0: "Performance ID must be positive";
-        assert eventId > 0: "Event ID must be positive";
-        assert eventTitle != null && !eventTitle.isEmpty(): "Event title " +
-                "cannot be null or empty";
-        assert (startDateTime != null && endDateTime != null): "Start or end" +
-                " time cannot be null";
-        assert !endDateTime.isBefore(startDateTime): "End date time must be " +
-                "after the start time";
-        assert venueCapacity > 0: "Capacity must be positive";
-        assert numTicketsTotal >= 0: "tickets cannot be negative";
-        assert ticketPrice >= 0: "Price cannot be negative";
+                       String venueAddress,
+                       int venueCapacity,
+                       boolean venueIsOutdoor,
+                       boolean venueIsAllowsSmoking,
+                       int numTicketsTotal,
+                       double ticketPrice) {
 
         this.performanceId = performanceId;
-        this.eventId = eventId;
-        this.eventTitle = eventTitle;
+        this.event = event;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.performersNames = performersNames;
@@ -88,8 +79,7 @@ public class Performance {
      * @return true if event is ticketed
      */
     public boolean checkIfEventIsTicketed() {
-        // Implementation for checking if the event is ticketed
-        return numTicketsTotal > 0;
+        return event != null && event.isTicketed();
     }
 
     /**
@@ -121,7 +111,7 @@ public class Performance {
      */
     public String getOrganiserEmail() {
         // Implementation for getting the organizer's email
-        return organiserEmail;
+        return event.getOrganiserEmail();
     }
 
     /**
@@ -129,7 +119,7 @@ public class Performance {
      * @return event ID
      */
     public long getEventId() {
-        return eventId;
+        return event.getEventID();
     }
     /**
      * Gets event title of the corresponding event to the performance
@@ -137,7 +127,7 @@ public class Performance {
      */
     public String getEventTitle() {
         // Implementation for getting the event title
-        return eventTitle;
+        return event.getEventTitle();
     }
 
     /**
@@ -154,8 +144,9 @@ public class Performance {
      * @return true if the performance was created by a specific EP
      */
     public boolean checkCreatedByEP(String epEmail) {
-        // Implementation for checking if the performance was created by a specific entertainment provider
-        return false; // Placeholder return value
+        return event != null
+                && event.getOrganiserEmail() != null
+                && event.getOrganiserEmail().equals(epEmail);
     }
 
     /**
@@ -373,4 +364,10 @@ public class Performance {
     public Collection<Booking> getBookings () {
         return bookings;
     }
+
+    public String getVenueAddress () {
+        return venueAddress;
+    }
+
+
 }

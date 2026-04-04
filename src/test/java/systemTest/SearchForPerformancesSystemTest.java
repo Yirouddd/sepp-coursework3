@@ -1,4 +1,4 @@
-package systemTests;
+package systemTest;
 
 import controller.EventPerformanceController;
 import enums.EventType;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-class SearchForPerformancesSystemTest {
+public class SearchForPerformancesSystemTest {
 
     static EventPerformanceController controller;
     static View view;

@@ -29,7 +29,7 @@ public class Student extends User {
     this.name = name;
     this.phoneNumber = phoneNumber;
     this.bookings = new ArrayList<>();
-    this.studentPreferences = new StudentPreferences(false, false, false, false, false);
+    this.studentPreferences = new StudentPreferences(false,false, false, false, false, false);
   }
 
   /**

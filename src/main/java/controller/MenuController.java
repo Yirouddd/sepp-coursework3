@@ -1,12 +1,7 @@
 package controller;
 
-import enums.GuestMenuOptions;
-import enums.StudentMenuOptions;
-import enums.AdminMenuOptions;
-import enums.EPMenuOptions;
 import interfaces.TextUserInterface;
 import interfaces.View;
-import user.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,36 +11,71 @@ import java.util.Collection;
  * system.
  */
 public class MenuController extends Controller {
+    final private UserController userController;
+    final private EventPerformanceController eventPerformanceController;
+    final private BookingController bookingController;
 
-    private UserController userController;
-    private EventPerformanceController eventPerformanceController;
-    private BookingController bookingController;
+    private View view;
 
-    public MenuController(User currentUser, View view, UserController userController,
-                          EventPerformanceController eventPerformanceController, BookingController bookingController) {
-        super(currentUser, view); //added this line
-        this.userController = userController;
-        this.eventPerformanceController = eventPerformanceController;
-        this.bookingController = bookingController;
+    public enum GuestMenuOptions {
+        LOGIN,
+        REGISTER_EP
+    }
+
+    public enum StudentMenuOptions {
+        LOGOUT,
+        SEARCH_FOR_PERFORMANCES,
+        VIEW_PERFORMANCE,
+        REVIEW_PERFORMANCE,
+        EDIT_PREFERENCES,
+        BOOK_EVENT,
+        CANCEL_BOOKING
+    }
+
+    public enum EPMenuOptions {
+        LOGOUT,
+        SEARCH_FOR_PERFORMANCES,
+        VIEW_PERFORMANCE,
+        CREATE_EVENT,
+        CANCEL_PERFORMANCE
+    }
+
+    public enum AdminMenuOptions {
+        LOGOUT,
+        SEARCH_FOR_PERFORMANCES,
+        VIEW_PERFORMANCE,
+        SPONSOR_PERFORMANCE
+    }
+
+    public MenuController(View view, String preregistedUsersFilePath, String preregistedAdminFilePath) {
+        this.view = view;
+
+        userController = new UserController(view, preregistedUsersFilePath, preregistedAdminFilePath);
+        eventPerformanceController = new EventPerformanceController(view);
+        bookingController = new BookingController(view);
     }
 
     // main Menu decides which menu to show depend on the current user role.
     public void mainMenu() {
-        // Implementation for the main menu of the application
-        if (checkCurrentUserIsGuest()) {
-            handleGuestMainMenu();
-        } else if (checkCurrentUserIsStudent()) {
-            handleStudentMainMenu();
-        } else if (checkCurrentUserIsAdmin()) {
-            handleAdminStaffMainMenu();
-        } else if (checkCurrentUserIsEntertainmentProvider()) {
-            handleEntertainmentProviderMainMenu();
+        while (true) {
+            // Implementation for the main menu of the application
+            if (checkCurrentUserIsGuest()) {
+                handleGuestMainMenu();
+            } else if (checkCurrentUserIsStudent()) {
+                handleStudentMainMenu();
+            } else if (checkCurrentUserIsAdmin()) {
+                handleAdminStaffMainMenu();
+            } else if (checkCurrentUserIsEntertainmentProvider()) {
+                handleEntertainmentProviderMainMenu();
+            }
+
+            setCurrentUser(userController.getCurrentUser());
         }
+
     }
 
     // handles the guest menu
     private boolean handleGuestMainMenu() {
-        View view = new TextUserInterface();
         // Implementation for handling the main menu options for a guest user
         Collection<String> options = new ArrayList<>();
 
@@ -70,7 +100,6 @@ public class MenuController extends Controller {
     }
 
     private boolean handleStudentMainMenu() {
-        View view = new TextUserInterface();
 
         Collection<String> options = new ArrayList<>();
         for (StudentMenuOptions option : StudentMenuOptions.values()) {
@@ -85,7 +114,7 @@ public class MenuController extends Controller {
                 // return to guest menu after logout
                 return true;
             case SEARCH_FOR_PERFORMANCES:
-                eventPerformanceController.searchforPerformances();
+                eventPerformanceController.searchForPerformances();
                 return false;
             case VIEW_PERFORMANCE:
                 eventPerformanceController.viewPerformance();
@@ -109,7 +138,6 @@ public class MenuController extends Controller {
     }
 
     private boolean handleEntertainmentProviderMainMenu() {
-        View view = new TextUserInterface();
         // Implementation for handling the main menu options for a staff user
         Collection<String> options = new ArrayList<>();
         for (EPMenuOptions option : EPMenuOptions.values()) {
@@ -123,7 +151,7 @@ public class MenuController extends Controller {
                 // return to guest menu after logout
                 return true;
             case SEARCH_FOR_PERFORMANCES:
-                eventPerformanceController.searchforPerformances();
+                eventPerformanceController.searchForPerformances();
                 return false;
             case VIEW_PERFORMANCE:
                 eventPerformanceController.viewPerformance();
@@ -141,7 +169,6 @@ public class MenuController extends Controller {
     }
 
     private boolean handleAdminStaffMainMenu() {
-        View view = new TextUserInterface();
         // Implementation for handling the main menu options for an admin staff user
         Collection<String> options = new ArrayList<>();
         for (AdminMenuOptions option : AdminMenuOptions.values()) {
@@ -155,7 +182,7 @@ public class MenuController extends Controller {
                 // return to guest menu after logout
                 return true;
             case SEARCH_FOR_PERFORMANCES:
-                eventPerformanceController.searchforPerformances();
+                eventPerformanceController.searchForPerformances();
                 return false;
             case VIEW_PERFORMANCE:
                 eventPerformanceController.viewPerformance();
@@ -168,4 +195,5 @@ public class MenuController extends Controller {
                 return false;
         }
     }
+
 }

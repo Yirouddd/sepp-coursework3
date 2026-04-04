@@ -105,4 +105,15 @@ public abstract class Controller {
 
     return choice - 1;
   }
+
+
+  // setter and getter
+  public User getCurrentUser () {
+    return currentUser;
+  }
+
+  public void setCurrentUser (User currentUser) {
+    this.currentUser = currentUser;
+  }
+
 }

@@ -59,7 +59,7 @@ public class editPreferenceSystemTest {
     }
     @BeforeEach
     void setup() throws Exception{
-        userController = new UserController(
+        userController = new UserController(mockView,
                 "src/resources/student.txt",
                 "src/resources/admins.txt"
         );

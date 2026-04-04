@@ -19,26 +19,14 @@ public class Event{
     private String eventTitle;
     private EventType type;
     private boolean isTicketed;
-    private String organiserName;
-    private String organiserEmail;
     private List<Performance> performances;
     private EntertainmentProvider entertainmentProvider;
 
-    public Event(long eventID, String eventTitle, EventType type,
-                 boolean isTicketed, String organiserName, String organiserEmail) {
-        assert eventID > 0: "Event ID must be positive";
-        assert eventTitle != null && !eventTitle.isEmpty(): "Title cannot be " +
-                "null or " +
-                "empty";
-        assert organiserEmail != null && !organiserEmail.isEmpty():
-                "Organiser email is required";
-
+    public Event(long eventID, String eventTitle, EventType type, boolean isTicketed) {
         this.eventID = eventID;
         this.eventTitle = eventTitle;
         this.type = type;
         this.isTicketed = isTicketed;
-        this.organiserName = organiserName;
-        this.organiserEmail = organiserEmail;
         this.performances = new ArrayList<>();
     }
     public Performance createPerformance(long performanceID,
@@ -52,7 +40,7 @@ public class Event{
                                          int numTicketsTotal,
                                          double ticketPrice) {
         Performance p = new Performance(
-                performanceID, this.eventID, this.eventTitle, startDateTime,
+                performanceID, this, startDateTime,
                 endDateTime, performerNames, venueAddress, venueCapacity,
                 venueIsOutdoors, venueIsSmoking, numTicketsTotal, ticketPrice
         );
@@ -75,11 +63,11 @@ public class Event{
     }
 
     public String getOrganiserName() {
-        return organiserName;
+        return entertainmentProvider.getOrgName();
     }
 
     public String getOrganiserEmail() {
-        return organiserEmail;
+        return entertainmentProvider.getEmail();
     }
 
     public double getAverageRatingOfPerformances() {
@@ -126,7 +114,7 @@ public class Event{
     }
 
     public void addPerformance(Performance p) {
-        if (p != null) {
+        if (p != null && !performances.contains(p)) {
             performances.add(p);
         }
     }
@@ -138,7 +126,13 @@ public class Event{
         result.append("Title: ").append(eventTitle).append("\n");
         result.append("Type: ").append(type).append("\n");
         result.append("Ticketed: ").append(isTicketed).append("\n");
-        result.append("Organiser: ").append(organiserName).append(" - ").append(organiserEmail).append("\n");
+
+        if (entertainmentProvider != null) {
+            result.append("Organiser: ").append(getOrganiserName()).append(" - ").append(getOrganiserEmail()).append("\n");
+        } else {
+            result.append("Organiser: Not assigned\n");
+        }
+
         result.append("Number of performances: ").append(performances.size()).append("\n");
         result.append("Performances: \n");
         for (Performance p : performances) {
@@ -158,6 +152,14 @@ public class Event{
 
     public String getEventTitle() {
         return eventTitle;
+    }
+
+    public EventType getEventType () {
+        return type;
+    }
+
+    public void setOrganizer(EntertainmentProvider entertainmentProvider) {
+        this.entertainmentProvider = entertainmentProvider;
     }
 
 }

@@ -21,7 +21,7 @@ public class EntertainmentProvider extends User {
      * Constructor for EntertainmentProvider.
      *
      * @param orgName         the name of the entertainment provider
-     * @param businessNNumber the business number of the entertainment provider
+     * @param businessNumber the business number of the entertainment provider
      * @param name            the name of the entertainment provider
      * @param description     the description of the entertainment provider
      */

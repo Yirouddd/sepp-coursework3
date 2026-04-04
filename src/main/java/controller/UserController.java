@@ -19,14 +19,16 @@ public class UserController extends Controller {
 
     public final String PREREGISTERED_USERS_FILE_PATH;
     public final String PREREGISTERED_ADMIN_FILE_PATH;
+
     private Map<String, User> users;
-    private View view = new TextUserInterface();
+    private View view;
 
 
-    public UserController(String preregisteredUsersFilePath, String preregisteredAdminFilePath) {
+    public UserController(View view, String preregisteredUsersFilePath, String preregisteredAdminFilePath) {
         PREREGISTERED_USERS_FILE_PATH = preregisteredUsersFilePath;
         PREREGISTERED_ADMIN_FILE_PATH = preregisteredAdminFilePath;
 
+        this.view = view;
         users = new HashMap<>();
         try {
             addPreregisteredUsers();
@@ -36,36 +38,31 @@ public class UserController extends Controller {
     }
 
     public void login() {
-        String email = view.getInput("Email: ").trim();
-        if (email.isEmpty()) {
-            view.displayError("Email cannot be empty.");
-            return;
+
+        while (true) {
+            String email = view.getInput("Email: ").trim();
+            String password = view.getInput("Password: ").trim();
+
+            if (email.isEmpty() || password.isEmpty()) {
+                view.displayError("Email/password cannot be empty.");
+                return;
+            }
+
+            User user = users.get(email);
+
+            if (user != null && user.getPassword().equals(password)) {
+                currentUser = user;
+                view.displaySuccess("Login successful.");
+                break;
+            }else {
+                view.displayError("Incorrect email/password.");
+            }
         }
-
-        String password = view.getInput("Password: ").trim();
-        if (password.isEmpty()) {
-            view.displayError("Password cannot be empty.");
-            return;
-        }
-
-        User user = users.get(email);
-
-        if (user == null) {
-            view.displayError("User does not exist.");
-            return;
-        }
-
-        if (!user.getPassword().equals(password)) {
-            view.displayError("Incorrect password.");
-            return;
-        }
-
-        currentUser = user;
-        view.displaySuccess("Login successful.");
     }
 
     public void logout() {
-        // Implementation for user logout
+        currentUser = null;
+        view.displaySuccess("Log out successful.");
     }
 
     public void registerEntertainmentProvider() {

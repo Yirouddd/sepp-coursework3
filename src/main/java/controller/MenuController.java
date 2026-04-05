@@ -1,5 +1,9 @@
 package controller;
 
+import external.MockPaymentSystem;
+import external.MockVerificationService;
+import external.PaymentSystem;
+import external.VerificationService;
 import interfaces.View;
 import user.User;
 import java.util.ArrayList;
@@ -53,9 +57,13 @@ public class MenuController extends Controller {
      */
     public MenuController(View view, String preregistedUsersFilePath, String preregistedAdminFilePath) {
         this.view = view;
-        userController = new UserController(view, preregistedUsersFilePath, preregistedAdminFilePath);
-        eventPerformanceController = new EventPerformanceController(view);
-        bookingController = new BookingController(view, eventPerformanceController);
+
+        PaymentSystem paymentSystem = new MockPaymentSystem();
+        VerificationService verificationService = new MockVerificationService();
+
+        userController = new UserController(view, verificationService, preregistedUsersFilePath, preregistedAdminFilePath);
+        eventPerformanceController = new EventPerformanceController(view, paymentSystem);
+        bookingController = new BookingController(view, paymentSystem, eventPerformanceController);
     }
 
     /**

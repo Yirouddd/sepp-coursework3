@@ -16,6 +16,7 @@ public class UserController extends Controller {
     public final String PREREGISTERED_USERS_FILE_PATH;
     public final String PREREGISTERED_ADMIN_FILE_PATH;
     private Map<String, User> users;
+    private final VerificationService verificationService;
 
     /**
      * Constructs a UserController.
@@ -24,10 +25,14 @@ public class UserController extends Controller {
      * @param preregisteredUsersFilePath students file path
      * @param preregisteredAdminFilePath admins file path
      */
-    public UserController(View view, String preregisteredUsersFilePath, String preregisteredAdminFilePath) {
+    public UserController(View view,
+                          VerificationService verificationService,
+                          String preregisteredUsersFilePath,
+                          String preregisteredAdminFilePath) {
         PREREGISTERED_USERS_FILE_PATH = preregisteredUsersFilePath;
         PREREGISTERED_ADMIN_FILE_PATH = preregisteredAdminFilePath;
         this.view = view;
+        this.verificationService = verificationService;
         users = new HashMap<>();
 
         try {
@@ -81,12 +86,10 @@ public class UserController extends Controller {
         String name;
         String description;
 
-        VerificationService verificationService = new MockVerificationService();
-
         while (true) {
-            System.out.println("Please complete the following registration information.");
+            String head = "Please complete the following registration information.";
 
-            email = view.getInput("Email: ").trim();
+            email = view.getInput(head + "\nEmail: ").trim();
             if (email.isEmpty() || !email.contains("@")){
                 view.displayError("Invalid email.");
                 continue;

@@ -4,8 +4,8 @@ import interfaces.View;
 
 public class Main{
     public static void main (String[] args){
-        String userFilePath = "src/main/resources/students.txt";
-        String adminFilePath = "src/main/resources/admins.txt";
+        String userFilePath = "src/resources/student.txt";
+        String adminFilePath = "src/resources/admins.txt";
 
         View appView = new TextUserInterface();
         MenuController menuController = new MenuController(appView, userFilePath, adminFilePath);

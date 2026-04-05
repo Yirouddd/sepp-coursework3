@@ -1,8 +1,7 @@
 package controller;
 
-import interfaces.TextUserInterface;
 import interfaces.View;
-
+import user.User;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -14,8 +13,6 @@ public class MenuController extends Controller {
     final private UserController userController;
     final private EventPerformanceController eventPerformanceController;
     final private BookingController bookingController;
-
-    private View view;
 
     public enum GuestMenuOptions {
         LOGIN,
@@ -56,16 +53,28 @@ public class MenuController extends Controller {
      */
     public MenuController(View view, String preregistedUsersFilePath, String preregistedAdminFilePath) {
         this.view = view;
-
         userController = new UserController(view, preregistedUsersFilePath, preregistedAdminFilePath);
         eventPerformanceController = new EventPerformanceController(view);
         bookingController = new BookingController(view, eventPerformanceController);
     }
 
-    // main Menu decides which menu to show depend on the current user role.
+    /**
+     * Synchronises logged-in user across controllers.
+     */
+    private void syncCurrentUserAcrossControllers() {
+        User user = userController.getCurrentUser();
+        this.setCurrentUser(user);
+        eventPerformanceController.setCurrentUser(user);
+        bookingController.setCurrentUser(user);
+    }
+
+    /**
+     * Main application loop.
+     */
     public void mainMenu() {
         while (true) {
-            // Implementation for the main menu of the application
+            syncCurrentUserAcrossControllers();
+
             if (checkCurrentUserIsGuest()) {
                 handleGuestMainMenu();
             } else if (checkCurrentUserIsStudent()) {
@@ -75,17 +84,16 @@ public class MenuController extends Controller {
             } else if (checkCurrentUserIsEntertainmentProvider()) {
                 handleEntertainmentProviderMainMenu();
             }
-
-            setCurrentUser(userController.getCurrentUser());
         }
-
     }
 
-    // handles the guest menu
+    /**
+     * Handles guest menu.
+     *
+     * @return true if menu should return
+     */
     private boolean handleGuestMainMenu() {
-        // Implementation for handling the main menu options for a guest user
         Collection<String> options = new ArrayList<>();
-
         for (GuestMenuOptions option : GuestMenuOptions.values()) {
             options.add(option.name());
         }
@@ -106,8 +114,12 @@ public class MenuController extends Controller {
         }
     }
 
+    /**
+     * Handles student menu.
+     *
+     * @return true if menu should return
+     */
     private boolean handleStudentMainMenu() {
-
         Collection<String> options = new ArrayList<>();
         for (StudentMenuOptions option : StudentMenuOptions.values()) {
             options.add(option.name());
@@ -144,12 +156,17 @@ public class MenuController extends Controller {
         }
     }
 
+    /**
+     * Handles entertainment provider menu.
+     *
+     * @return true if menu should return
+     */
     private boolean handleEntertainmentProviderMainMenu() {
-        // Implementation for handling the main menu options for a staff user
         Collection<String> options = new ArrayList<>();
         for (EPMenuOptions option : EPMenuOptions.values()) {
             options.add(option.name());
         }
+
         int choice = selectFromMenu(options);
 
         switch (EPMenuOptions.values()[choice]) {
@@ -175,12 +192,17 @@ public class MenuController extends Controller {
         }
     }
 
+    /**
+     * Handles admin menu.
+     *
+     * @return true if menu should return
+     */
     private boolean handleAdminStaffMainMenu() {
-        // Implementation for handling the main menu options for an admin staff user
         Collection<String> options = new ArrayList<>();
         for (AdminMenuOptions option : AdminMenuOptions.values()) {
             options.add(option.name());
         }
+
         int choice = selectFromMenu(options);
 
         switch (AdminMenuOptions.values()[choice]) {
@@ -202,5 +224,4 @@ public class MenuController extends Controller {
                 return false;
         }
     }
-
 }

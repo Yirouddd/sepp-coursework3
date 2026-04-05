@@ -32,6 +32,7 @@ public class EntertainmentProvider extends User {
         this.businessNumber = businessNumber;
         this.name = name;
         this.description = description;
+        this.events = new ArrayList<>();
         setEmail(email);
         setPassword(password);
     }
@@ -47,7 +48,6 @@ public class EntertainmentProvider extends User {
         }
     }
 
-
     /**
      * Gets the organization name
      *
@@ -58,5 +58,14 @@ public class EntertainmentProvider extends User {
     }
 
     public void removeEvent(Event event) {
+        events.remove(event);
+    }
+
+    public String getBusinessNumber() {
+        return businessNumber;
+    }
+
+    public List<Event> getEvents() {
+        return events;
     }
 }

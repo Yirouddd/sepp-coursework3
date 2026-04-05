@@ -1,1 +1,2 @@
 dyr@mail.com, 123, yirou, 123
+s1@test.com,pass,Stu One,123456789

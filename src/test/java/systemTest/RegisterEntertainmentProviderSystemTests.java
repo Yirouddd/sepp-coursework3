@@ -5,182 +5,378 @@ import external.VerificationService;
 import interfaces.View;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import user.EntertainmentProvider;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class RegisterEntertainmentProviderSystemTests {
+/**
+ * System tests for register entertainment provider use case.
+ * In this class we try success case and several error cases too.
+ */
+public class RegisterEntertainmentProviderSystemTests {
 
-    @Mock
-    private View view;
-
-    @Mock
-    private VerificationService verificationService;
+    private static final String STUDENT_EMAIL = "student1@test.com";
+    private static final String STUDENT_PASSWORD = "pass1";
+    private static final String ADMIN_EMAIL = "admin1@test.com";
+    private static final String ADMIN_PASSWORD = "pass1";
 
     @TempDir
     Path tempDir;
 
+    private Path studentsFile;
+    private Path adminsFile;
+
+    private View mockView;
+    private VerificationService mockVerificationService;
+
     private UserController userController;
 
     @BeforeEach
-    void setUp() throws Exception {
-        Path studentsFile = tempDir.resolve("students.txt");
-        Path adminsFile = tempDir.resolve("admins.txt");
+    void setUp() throws IOException {
+        studentsFile = tempDir.resolve("students.txt");
+        adminsFile = tempDir.resolve("admins.txt");
 
-        Files.writeString(studentsFile, "student1@ed.ac.uk,pass123,Student One,123456\n");
-        Files.writeString(adminsFile, "admin1@ed.ac.uk,adminpass,Admin One\n");
+        Files.writeString(
+                studentsFile,
+                STUDENT_EMAIL + "," + STUDENT_PASSWORD + ",name1,1234567\n"
+                        + "student2@test.com,pass2,name2,7654321\n"
+        );
+
+        Files.writeString(
+                adminsFile,
+                ADMIN_EMAIL + "," + ADMIN_PASSWORD + ",name1\n"
+        );
+
+        mockView = mock(View.class);
+        mockVerificationService = mock(VerificationService.class);
+
+        when(mockVerificationService.verifyEntertainmentProvider(anyString())).thenReturn(true);
 
         userController = new UserController(
-                view,
-                verificationService,
-                adminsFile.toString(),
-                studentsFile.toString()
-        );
-
-        userController.getUsers().put(
-                "provider1@test.com",
-                new EntertainmentProvider(
-                        "provider1@test.com",
-                        "providerpass",
-                        "Provider One Ltd",
-                        "1234567890",
-                        "Alice Provider",
-                        "Existing provider"
-                )
+                mockView,
+                mockVerificationService,
+                studentsFile.toString(),
+                adminsFile.toString()
         );
     }
 
-    @Test
-    void shouldRegisterEntertainmentProviderSuccessfully() {
-        when(verificationService.verifyEntertainmentProvider("1111111111")).thenReturn(true);
+    private void stubInputs(String... inputs) {
+        when(mockView.getInput(anyString()))
+                .thenReturn(inputs[0], Arrays.copyOfRange(inputs, 1, inputs.length));
+    }
 
-        when(view.getInput(anyString())).thenReturn(
-                "newprovider@test.com",
-                "pw123",
-                "New Org",
-                "1111111111",
-                "Jane Contact",
-                "Great events"
+    private void addExistingProvider(
+            String email,
+            String password,
+            String orgName,
+            String businessNumber,
+            String contactName,
+            String description
+    ) {
+        EntertainmentProvider provider = new EntertainmentProvider(
+                email,
+                password,
+                orgName,
+                businessNumber,
+                contactName,
+                description
+        );
+        userController.getUsers().put(email, provider);
+    }
+
+    /**
+     * This test checks the normal register flow.
+     * After success, provider should be saved and logged in.
+     */
+    @Test
+    void shouldRegisterProviderAndLogThemInWhenAllDetailsAreValid() {
+        stubInputs(
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertAll(
-                () -> assertNotNull(userController.getCurrentUser(),
-                        "A successful registration should log the provider in."),
-                () -> assertTrue(userController.getCurrentUser() instanceof EntertainmentProvider,
-                        "The current user should be an entertainment provider after registration."),
-                () -> assertTrue(userController.getUsers().containsKey("newprovider@test.com"),
-                        "The newly registered provider should be added to the users map.")
-        );
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Valid provider registration should create the account and log the provider in",
+                () -> assertNotNull(provider,
+                        "Current user should become the new entertainment provider after registration."),
+                () -> assertEquals("ep1@test.com", provider.getEmail(),
+                        "Registered provider email should match the entered email."),
+                () -> assertEquals("org1", provider.getOrgName(),
+                        "Registered provider organisation should match the entered organisation name."),
+                () -> assertEquals("bn1", provider.getBusinessNumber(),
+                        "Registered provider business number should match the verified number."),
+                () -> assertTrue(userController.getUsers().containsKey("ep1@test.com"),
+                        "Users map should contain the new provider account after successful registration."),
+                () -> verify(mockVerificationService).verifyEntertainmentProvider("bn1"),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 
+    /**
+     * This test checks invalid email first.
+     * System should show error and ask again.
+     */
     @Test
-    void shouldRetryAfterInvalidEmailThenRegisterSuccessfully() {
-        when(verificationService.verifyEntertainmentProvider("1111111111")).thenReturn(true);
-
-        when(view.getInput(anyString())).thenReturn(
-                "invalid-email",
-                "newprovider@test.com",
-                "pw123",
-                "Retry Org",
-                "1111111111",
-                "Retry Contact",
-                "Retry description"
+    void shouldRejectInvalidEmailThenRegisterSuccessfullyAfterRetry() {
+        stubInputs(
+                "ep1",
+                "ep1@test.com",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertEquals("newprovider@test.com", userController.getCurrentUser().getEmail(),
-                "Registration should succeed after re-entering a valid email.");
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displayError(contains("Invalid email"));
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Registration should continue after invalid email and succeed on the next full try",
+                () -> assertNotNull(provider,
+                        "Provider should be registered after entering a valid email on retry."),
+                () -> assertEquals("ep1@test.com", provider.getEmail(),
+                        "The account should use the valid email from the second attempt."),
+                () -> verify(mockView, atLeastOnce()).displayError("Invalid email."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 
+    /**
+     * This test checks empty password.
+     * Register should not finish until password is given.
+     */
     @Test
-    void shouldRetryAfterVerificationFailureThenRegisterSuccessfully() {
-        when(verificationService.verifyEntertainmentProvider("123")).thenReturn(false);
-        when(verificationService.verifyEntertainmentProvider("1111111111")).thenReturn(true);
-
-        when(view.getInput(anyString())).thenReturn(
-                "verify@test.com", "pw123", "Verify Org", "123",
-                "verify@test.com", "pw123", "Verify Org", "1111111111", "Verifier", "Verified provider"
+    void shouldRejectEmptyPasswordThenRegisterSuccessfullyAfterRetry() {
+        stubInputs(
+                "ep1@test.com",
+                "",
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertEquals("verify@test.com", userController.getCurrentUser().getEmail(),
-                "Registration should succeed after a valid business number is entered.");
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displayError(contains("verification failed"));
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Registration should reject empty password and succeed after a complete retry",
+                () -> assertNotNull(provider,
+                        "Provider should still be registered after entering a password on retry."),
+                () -> assertEquals("ep1@test.com", provider.getEmail(),
+                        "Registered account should keep the details from the valid retry attempt."),
+                () -> verify(mockView, atLeastOnce()).displayError("Password cannot be empty."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 
+    /**
+     * This test checks business verification fail.
+     * Account should not be made until number is verified.
+     */
     @Test
-    void shouldRejectDuplicateEmailThenAllowFreshRegistration() {
-        when(verificationService.verifyEntertainmentProvider("1111111111")).thenReturn(true);
+    void shouldRetryAfterBusinessVerificationFailsThenRegisterSuccessfully() {
+        when(mockVerificationService.verifyEntertainmentProvider("bnBad")).thenReturn(false);
+        when(mockVerificationService.verifyEntertainmentProvider("bn1")).thenReturn(true);
 
-        when(view.getInput(anyString())).thenReturn(
-                "provider1@test.com", "pw123", "Another Org", "1111111111",
-                "fresh@test.com", "pw999", "Fresh Org", "1111111111", "Fresh Contact", "Fresh Description"
+        stubInputs(
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bnBad",
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertEquals("fresh@test.com", userController.getCurrentUser().getEmail(),
-                "A fresh provider should be registered after the duplicate email is rejected.");
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displayError(contains("email already exists"));
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Registration should loop after failed business verification and succeed later",
+                () -> assertNotNull(provider,
+                        "Provider should be registered after a later verified business number is entered."),
+                () -> assertEquals("bn1", provider.getBusinessNumber(),
+                        "Provider should store the business number from the successful retry."),
+                () -> verify(mockVerificationService).verifyEntertainmentProvider("bnBad"),
+                () -> verify(mockVerificationService).verifyEntertainmentProvider("bn1"),
+                () -> verify(mockView, atLeastOnce()).displayError("Business number verification failed."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 
+    /**
+     * This test checks duplicate email.
+     * Same email should not be used again.
+     */
     @Test
-    void shouldRejectDuplicateOrganisationAndBusinessNumberThenAllowFreshRegistration() {
-        when(verificationService.verifyEntertainmentProvider("1234567890")).thenReturn(true);
-        when(verificationService.verifyEntertainmentProvider("2222222222")).thenReturn(true);
+    void shouldRejectDuplicateEmailThenAllowRegistrationWithAnotherEmail() {
+        addExistingProvider(
+                "ep1@test.com",
+                "pass0",
+                "org0",
+                "bn0",
+                "name0",
+                "desc0"
+        );
 
-        when(view.getInput(anyString())).thenReturn(
-                "another@test.com", "pw123", "Provider One Ltd", "1234567890",
-                "fresh2@test.com", "pw999", "Fresh Org 2", "2222222222", "Fresh Contact 2", "Fresh Description 2"
+        stubInputs(
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1",
+                "ep2@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertEquals("fresh2@test.com", userController.getCurrentUser().getEmail(),
-                "A fresh provider should be registered after the duplicate organisation is rejected.");
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displayError(contains("already exists"));
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Duplicate email should be rejected before a new email is accepted",
+                () -> assertNotNull(provider,
+                        "Provider should be registered after changing to an unused email."),
+                () -> assertEquals("ep2@test.com", provider.getEmail(),
+                        "Registered provider should use the fresh email from the second attempt."),
+                () -> verify(mockView, atLeastOnce()).displayError("An account with this email already exists."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 
+    /**
+     * This test checks same organisation and same business number.
+     * In this case system should say provider already exists.
+     */
     @Test
-    void shouldRetryAfterEmptyDescriptionThenRegisterSuccessfully() {
-        when(verificationService.verifyEntertainmentProvider("1111111111")).thenReturn(true);
+    void shouldRejectExistingProviderWithSameOrganisationAndBusinessNumberThenAllowRetry() {
+        addExistingProvider(
+                "ep0@test.com",
+                "pass0",
+                "org1",
+                "bn1",
+                "name0",
+                "desc0"
+        );
 
-        when(view.getInput(anyString())).thenReturn(
-                "emptydesc@test.com", "pw123", "Desc Org", "1111111111", "Contact Name", "",
-                "emptydesc@test.com", "pw123", "Desc Org", "1111111111", "Contact Name", "Valid description"
+        stubInputs(
+                "ep2@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "ep2@test.com",
+                "pass1",
+                "org1",
+                "bn2",
+                "name1",
+                "desc1"
         );
 
         userController.registerEntertainmentProvider();
 
-        assertEquals("emptydesc@test.com", userController.getCurrentUser().getEmail(),
-                "Registration should succeed after a valid description is provided.");
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
 
-        verify(view).displayError(contains("Description"));
-        verify(view).displaySuccess(contains("Register successful"));
+        assertAll("Duplicate provider identity should be rejected before a non-duplicate retry succeeds",
+                () -> assertNotNull(provider,
+                        "Provider should be registered after changing the duplicate business details."),
+                () -> assertEquals("bn2", provider.getBusinessNumber(),
+                        "The registered provider should keep the non-duplicate business number from retry."),
+                () -> verify(mockView, atLeastOnce()).displayError("This entertainment provider already exists."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
+    }
+
+    /**
+     * This test checks empty contact name.
+     * Main contact person is required before finish.
+     */
+    @Test
+    void shouldRejectEmptyContactNameThenRegisterSuccessfullyAfterRetry() {
+        stubInputs(
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "",
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
+        );
+
+        userController.registerEntertainmentProvider();
+
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
+
+        assertAll("Registration should reject empty main contact name and succeed on retry",
+                () -> assertNotNull(provider,
+                        "Provider should be created after entering a valid contact name."),
+                () -> assertEquals("ep1@test.com", provider.getEmail(),
+                        "Registered account should use the details from the successful attempt."),
+                () -> verify(mockView, atLeastOnce()).displayError("Main contact name cannot be empty."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
+    }
+
+    /**
+     * This test checks empty description.
+     * Register should not finish until description is entered.
+     */
+    @Test
+    void shouldRejectEmptyDescriptionThenRegisterSuccessfullyAfterRetry() {
+        stubInputs(
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "",
+                "ep1@test.com",
+                "pass1",
+                "org1",
+                "bn1",
+                "name1",
+                "desc1"
+        );
+
+        userController.registerEntertainmentProvider();
+
+        EntertainmentProvider provider = (EntertainmentProvider) userController.getCurrentUser();
+
+        assertAll("Registration should reject empty description and succeed after the full details are re-entered",
+                () -> assertNotNull(provider,
+                        "Provider should be created after entering a non-empty description."),
+                () -> assertEquals("ep1@test.com", provider.getEmail(),
+                        "Registered account should come from the successful retry attempt."),
+                () -> verify(mockView, atLeastOnce()).displayError("Description cannot be empty."),
+                () -> verify(mockView).displaySuccess("Register successful!")
+        );
     }
 }

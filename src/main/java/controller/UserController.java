@@ -56,7 +56,7 @@ public class UserController extends Controller {
                 currentUser = user;
                 view.displaySuccess("Login successful.");
                 break;
-            }else {
+            } else {
                 view.displayError("Incorrect email/password.");
             }
         }

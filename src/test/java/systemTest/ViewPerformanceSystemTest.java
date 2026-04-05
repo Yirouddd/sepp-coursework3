@@ -18,7 +18,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class viewPerformanceSystemTest {
+public class ViewPerformanceSystemTest {
 
     private EventPerformanceController controller;
     private MockView mockView;
@@ -69,15 +69,9 @@ public class viewPerformanceSystemTest {
     }
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         mockView = new MockView();
         controller = new EventPerformanceController(mockView);
-    }
-
-    private void injectMockView(MockView mockView) throws Exception {
-        Field viewField = EventPerformanceController.class.getDeclaredField("view");
-        viewField.setAccessible(true);
-        viewField.set(controller, mockView);
     }
 
     private void setCurrentUser(Object user) throws Exception {

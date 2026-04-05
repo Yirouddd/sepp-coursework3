@@ -7,23 +7,18 @@ import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
 import user.Student;
-import user.User;
 import external.PaymentSystem;
-
 import interfaces.View;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.time.LocalDateTime;
 
 /**
- * Handles booking-related use cases.
+ * Menu controller for the text-based app.
  */
 public class BookingController extends Controller {
     private long nextBookingNumber;
     private static Collection<Booking> bookings;
-    private View view;
     private PaymentSystem paymentSystem;
     private EventPerformanceController eventPerformanceController;
 
@@ -132,12 +127,132 @@ public class BookingController extends Controller {
         view.displayBookingRecord(booking.generateBookingRecord());
     }
 
+    /**
+     * Reviews a performance.
+     */
     public void reviewPerformance() {
-        // Implementation for reviewing performance
+        if (!ensureStudent()) {
+            return;
+        }
+
+        Student student = (Student) currentUser;
+        Performance performance = null;
+
+        while (performance == null) {
+            try {
+                long performanceID = Long.parseLong(view.getInput("Enter performance ID to review: "));
+                performance = getPerformanceByID(performanceID);
+
+                if (performance == null) {
+                    view.displayError("Invalid performance ID.");
+                    continue;
+                }
+
+                if (performance.getStatus() != PerformanceStatus.ACTIVE && performance.checkHasNotHappenedYet()) {
+                    view.displayError("This performance cannot be reviewed.");
+                    return;
+                }
+
+                if (performance.checkHasNotHappenedYet()) {
+                    view.displayError("You can only review a performance after it has happened.");
+                    return;
+                }
+
+                boolean hasBooked = false;
+                for (Booking booking : bookings) {
+                    if (booking.getPerformance().getPerformanceId() == performance.getPerformanceId()
+                            && booking.checkBookedByStudent(student.getEmail())
+                            && booking.getBookingStatus() == BookingStatus.ACTIVE) {
+                        hasBooked = true;
+                        break;
+                    }
+                }
+
+                if (!hasBooked) {
+                    view.displayError("You can only review a performance you booked.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid numeric performance ID.");
+            }
+        }
+
+        int rating;
+        while (true) {
+            try {
+                rating = Integer.parseInt(view.getInput("Enter rating (1-5): "));
+                if (rating < 1 || rating > 5) {
+                    view.displayError("Rating must be between 1 and 5.");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                view.displayError("Rating must be a number.");
+            }
+        }
+
+        String comment = view.getInput("Enter optional comment: ");
+        performance.review(rating, comment);
+        view.displaySuccess("Review submitted successfully.");
     }
 
+    /**
+     * Cancels a booking.
+     */
     public void cancelBooking() {
-        // Implementation for cancelling a booking
+        if (!ensureStudent()) {
+            return;
+        }
+
+        Student student = (Student) currentUser;
+        Booking booking = null;
+
+        while (booking == null) {
+            try {
+                long bookingNumber = Long.parseLong(view.getInput("Enter booking number to cancel: "));
+                booking = getBookingByNumber(bookingNumber);
+
+                if (booking == null || !booking.checkBookedByStudent(student.getEmail())) {
+                    view.displayError("Invalid booking number or this booking does not belong to you.");
+                    booking = null;
+                    continue;
+                }
+
+                if (booking.getBookingStatus() != BookingStatus.ACTIVE) {
+                    view.displayError("This booking is not active.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid numeric booking number.");
+            }
+        }
+
+        if (!booking.getPerformance().getStartDateTime().isAfter(LocalDateTime.now().plusHours(24))) {
+            view.displayError("Bookings can only be cancelled if the performance is at least 24 hours away.");
+            return;
+        }
+
+        boolean refundSuccess = paymentSystem.processRefund(
+                booking.getNumTickets(),
+                booking.getPerformance().getEventTitle(),
+                booking.getStudentEmail(),
+                booking.getStudentPhone(),
+                booking.getPerformance().getOrganiserEmail(),
+                booking.getTransactionAmount(),
+                null
+        );
+
+        if (!refundSuccess) {
+            view.displayError("Refund was unsuccessful, so the booking was not cancelled.");
+            return;
+        }
+
+        booking.cancelByStudent();
+        booking.getPerformance().removeBooking(booking);
+        student.removeBooking(booking);
+        bookings.remove(booking);
+
+        view.displaySuccess("Booking cancelled successfully.");
     }
 
     /**
@@ -167,8 +282,9 @@ public class BookingController extends Controller {
      * @return performance or null
      */
     private Performance getPerformanceByID(long performanceID) {
-        return eventPerformanceController.findPerformanceById(performanceID);
+        return eventPerformanceController.getPerformanceByID(performanceID);
     }
+
 
     /**
      * Checks whether booking can proceed.
@@ -241,6 +357,4 @@ public class BookingController extends Controller {
         }
         return null;
     }
-
-
 }

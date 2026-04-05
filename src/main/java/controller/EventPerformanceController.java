@@ -1,6 +1,7 @@
 package controller;
 
 import enums.BookingStatus;
+import enums.EventType;
 import enums.PerformanceStatus;
 import external.MockPaymentSystem;
 import external.PaymentSystem;
@@ -14,6 +15,7 @@ import object.Event;
 import object.Performance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -28,7 +30,6 @@ public class EventPerformanceController extends Controller {
     private Collection<Event> events;
     private Collection<Performance> performances;
 
-    private View view;
     private PaymentSystem paymentSystem;
 
     /**
@@ -45,9 +46,113 @@ public class EventPerformanceController extends Controller {
         this.paymentSystem = new MockPaymentSystem();
     }
 
+    /**
+     * Creates an event and one or more performances.
+     *
+     * @return created event or null
+     */
     public Event createEvent() {
+        if (!checkCurrentUserIsEntertainmentProvider()) {
+            view.displayError("Only entertainment providers can create events.");
+            return null;
+        }
 
-        return null;
+        EntertainmentProvider provider = (EntertainmentProvider) currentUser;
+
+        String eventTitle = view.getInput("Enter event title: ").trim();
+        if (eventTitle.isEmpty()) {
+            view.displayError("Event title cannot be empty.");
+            return null;
+        }
+
+        for (Event existing : provider.getEvents()) {
+            if (existing.getEventTitle().equalsIgnoreCase(eventTitle)) {
+                view.displayError("You already have an event with this title.");
+                return null;
+            }
+        }
+
+        EventType eventType = promptEventType();
+        if (eventType == null) {
+            return null;
+        }
+
+        boolean isTicketed = promptYesNo("Is the event ticketed? (yes/no): ");
+
+        Event event = new Event(nextEventID++, eventTitle, eventType, isTicketed);
+        event.setOrganizer(provider);
+
+        boolean addAnother = false;
+        int performanceCount = 0;
+
+        do {
+            try {
+                LocalDateTime startDateTime = promptDateTime("Enter performance start date/time (yyyy-MM-dd HH:mm): ");
+                LocalDateTime endDateTime = promptDateTime("Enter performance end date/time (yyyy-MM-dd HH:mm): ");
+
+                if (!endDateTime.isAfter(startDateTime)) {
+                    view.displayError("End date/time must be after start date/time.");
+                    continue;
+                }
+
+                if (event.hasPerformanceAtSameTimes(startDateTime, endDateTime)) {
+                    view.displayError("This event already has a performance at overlapping times.");
+                    continue;
+                }
+
+                Collection<String> performerNames = promptPerformerNames();
+
+                String venueAddress = view.getInput("Enter venue address: ").trim();
+                if (venueAddress.isEmpty()) {
+                    view.displayError("Venue address cannot be empty.");
+                    continue;
+                }
+
+                int venueCapacity = promptPositiveInt("Enter venue capacity: ");
+                boolean venueIsOutdoors = promptYesNo("Is the venue outdoors? (yes/no): ");
+                boolean venueIsSmoking = promptYesNo("Is smoking allowed? (yes/no): ");
+
+                int numTicketsTotal = 0;
+                double ticketPrice = 0.0;
+
+                if (isTicketed) {
+                    numTicketsTotal = promptPositiveInt("Enter number of tickets available: ");
+                    ticketPrice = promptNonNegativeDouble("Enter ticket price: ");
+                }
+
+                Performance performance = event.createPerformance(
+                        nextPerformanceID++,
+                        startDateTime,
+                        endDateTime,
+                        performerNames,
+                        venueAddress,
+                        venueCapacity,
+                        venueIsOutdoors,
+                        venueIsSmoking,
+                        numTicketsTotal,
+                        ticketPrice
+                );
+
+                addPerformance(performance);
+                performanceCount++;
+                view.displaySuccess("Performance created successfully with ID " + performance.getPerformanceId());
+            } catch (IllegalArgumentException e) {
+                view.displayError(e.getMessage());
+            }
+
+            addAnother = promptYesNo("Add another performance to this event? (yes/no): ");
+        } while (addAnother);
+
+        if (performanceCount == 0) {
+            view.displayError("At least one valid performance must be created.");
+            return null;
+        }
+
+        addEvent(event);
+        provider.addEvent(event);
+        view.displaySuccess("Event created successfully with ID " + event.getEventID());
+
+        return event;
     }
 
     /**
@@ -263,7 +368,6 @@ public class EventPerformanceController extends Controller {
         }
 
         // message
-
         while (true) {
             organiserMessage = view.getInput("Provide a cancellation message for affected students: ");
 
@@ -339,21 +443,52 @@ public class EventPerformanceController extends Controller {
         view.displaySuccess("The performance has been cancelled and refunds have been processed if required.");
     }
 
-
+    /**
+     * Sponsorship validity check.
+     *
+     * @param performance performance
+     * @param amount amount
+     * @return true if sponsorship can proceed
+     */
     private boolean checkIfSponsorshipPossible(Performance performance, int amount) {
+        if (performance == null) {
+            view.displayError("Performance cannot be null.");
+            return false;
+        }
+
         if (!performance.checkIfEventIsTicketed()) {
             view.displayError("Sponsorship cannot be applied to non-ticketed " +
                     "performances.");
             return false;
         }
+
+        if (performance.getStatus() != PerformanceStatus.ACTIVE) {
+            view.displayError("Cancelled performances cannot be sponsored.");
+            return false;
+        }
+
         if (amount <= 0) {
             view.displayError("Sponsorship must be positive.");
             return false;
         }
+
+        if (amount > performance.getFinalTicketPrice()) {
+            view.displayError("Sponsorship cannot reduce the price below zero.");
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Sponsors a performance.
+     */
     public void sponsorPerformance() {
+        if (!checkCurrentUserIsAdmin()) {
+            view.displayError("Only admin staff can sponsor performances.");
+            return;
+        }
+
         if (performances.isEmpty()) {
             view.displayError("No performances available to sponsor.");
             return;
@@ -390,21 +525,20 @@ public class EventPerformanceController extends Controller {
         }
 
         // get valid sponsorship amount
-        double amount = -1;
-        while (amount <= 0 || amount > performance.getTicketPrice()) {
+        double amount;
+        while (true) {
             try {
-                String input =
-                        view.getInput("Enter sponsorship amount: £" + performance.getTicketPrice());
+                String input = view.getInput("Enter sponsorship amount: ");
                 amount = Double.parseDouble(input);
-                if (amount <= 0 || amount > performance.getTicketPrice()) {
-                    view.displayError("Invalid amount. It cannot be less than" +
-                            " 0 or bigger than ticket price.");
+
+                if (!checkIfSponsorshipPossible(performance, (int) amount)) {
+                    continue;
                 }
-            }
-            catch (NumberFormatException e) {
+
+                break;
+            } catch (NumberFormatException e) {
                 view.displayError("Invalid input. Please enter a number.");
-            }
-            catch (NoSuchElementException e) {
+            } catch (NoSuchElementException e) {
                 view.displayError("No input provided, cancelling sponsorship.");
                 return;
             }
@@ -417,12 +551,22 @@ public class EventPerformanceController extends Controller {
                 "with £" + amount);
     }
 
+    /**
+     * Adds event to the controller store.
+     *
+     * @param e event
+     */
     public void addEvent(Event e) {
         if (e != null) {
             events.add(e);
         }
     }
 
+    /**
+     * Adds performance to the controller store.
+     *
+     * @param p performance
+     */
     public void addPerformance(Performance p) {
         if (p != null) {
             performances.add(p);
@@ -447,7 +591,7 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
-    private Performance getPerformanceByID(long performanceID) {
+    Performance getPerformanceByID(long performanceID) {
         for (Performance p : performances) {
             if (p.getPerformanceId() == performanceID) {
                 return p;
@@ -456,13 +600,103 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
-    /**
-     * Public lookup for performance by id.
-     *
-     * @param performanceID performance id
-     * @return performance or null
-     */
-    public Performance findPerformanceById(long performanceID) {
-        return getPerformanceByID(performanceID);
+    private EventType promptEventType() {
+        while (true) {
+            String raw = view.getInput("Enter event type (music, theatre, dance, movie, sports, games): ").trim().toLowerCase();
+
+            switch (raw) {
+                case "music":
+                    return EventType.Music;
+                case "theatre":
+                    return EventType.Theatre;
+                case "dance":
+                    return EventType.Dance;
+                case "movie":
+                    return EventType.Movie;
+                case "sport":
+                case "sports":
+                    return EventType.Sports;
+                case "game":
+                case "games":
+                    return EventType.Games;
+                default:
+                    view.displayError("Invalid event type.");
+            }
+        }
+    }
+
+    private LocalDateTime promptDateTime(String prompt) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        while (true) {
+            String raw = view.getInput(prompt).trim();
+            try {
+                return LocalDateTime.parse(raw, formatter);
+            } catch (DateTimeParseException e) {
+                view.displayError("Invalid date/time format. Use yyyy-MM-dd HH:mm.");
+            }
+        }
+    }
+
+    private Collection<String> promptPerformerNames() {
+        String input = view.getInput("Enter performer names separated by commas (or leave blank): ").trim();
+        List<String> names = new ArrayList<>();
+
+        if (input.isEmpty()) {
+            return names;
+        }
+
+        String[] split = input.split(",");
+        for (String s : split) {
+            String trimmed = s.trim();
+            if (!trimmed.isEmpty()) {
+                names.add(trimmed);
+            }
+        }
+
+        return names;
+    }
+
+    private int promptPositiveInt(String prompt) {
+        while (true) {
+            try {
+                int value = Integer.parseInt(view.getInput(prompt).trim());
+                if (value <= 0) {
+                    view.displayError("Value must be positive.");
+                    continue;
+                }
+                return value;
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid integer.");
+            }
+        }
+    }
+
+    private double promptNonNegativeDouble(String prompt) {
+        while (true) {
+            try {
+                double value = Double.parseDouble(view.getInput(prompt).trim());
+                if (value < 0) {
+                    view.displayError("Value cannot be negative.");
+                    continue;
+                }
+                return value;
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid number.");
+            }
+        }
+    }
+
+    private boolean promptYesNo(String prompt) {
+        while (true) {
+            String raw = view.getInput(prompt).trim().toLowerCase();
+            if (raw.equals("yes") || raw.equals("y")) {
+                return true;
+            }
+            if (raw.equals("no") || raw.equals("n")) {
+                return false;
+            }
+            view.displayError("Please answer yes or no.");
+        }
     }
 }

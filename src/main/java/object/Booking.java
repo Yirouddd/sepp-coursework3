@@ -1,11 +1,9 @@
 package object;
 
 import enums.BookingStatus;
-import enums.PerformanceStatus;
 import user.Student;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Booking class represents a student with a bookingNumber, numTickets, amountPaid, bookingDateTime and status;
@@ -33,7 +31,7 @@ public class Booking {
         this.performance = performance;
         this.numTickets = numTickets;
         this.amountPaid = amountPaid;
-        bookingNumber = UUID.randomUUID().getMostSignificantBits();
+        this.bookingNumber = bookingNumber;
         status = BookingStatus.ACTIVE;
     }
 
@@ -167,5 +165,9 @@ public class Booking {
 
     public Performance getPerformance() {
         return performance;
+    }
+
+    public int getStudentPhone() {
+        return student.getPhoneNumber();
     }
 }

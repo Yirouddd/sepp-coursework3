@@ -84,7 +84,7 @@ public class ViewPerformanceSystemTest {
         currentUserField.set(controller, user);
     }
 
-    private void setupEventAndPerformance() {
+    private Event setupEventAndPerformance() {
         EntertainmentProvider ep = new EntertainmentProvider("ep@ed.ac.uk",
                 "passwordEP", "OrgName", "BN001", "Alice EP", "description");
         Event event = new Event(1L, "Concert", EventType.Music, true);
@@ -118,10 +118,12 @@ public class ViewPerformanceSystemTest {
         controller.addEvent(event);
         controller.addPerformance(p1);
         controller.addPerformance(p2);
+
+        return event;
     }
 
     @Test
-    void testNoPerformancesShouldShowError() {
+    void noPerformancesShouldShowError() {
         controller.viewPerformance();
 
         assertTrue(mockView.errorMessages.contains("No performances " +
@@ -145,7 +147,7 @@ public class ViewPerformanceSystemTest {
     }
 
     @Test
-    void testInvalidPerformanceID() throws Exception {
+    void testInvalidPerformanceIDThenValid() throws Exception {
         mockView = new MockView("10", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
@@ -170,13 +172,26 @@ public class ViewPerformanceSystemTest {
 
         controller.viewPerformance();
 
-        //assertTrue(mockView.errorMessages.isEmpty());
         assertTrue(mockView.errorMessages.contains("Too many unsuccessful " +
                 "attempts were made"));
     }
 
     @Test
-    void displaysFullDetailsSuccessfully() throws Exception {
+    void emptyInputShouldBeAsInvalid() throws Exception {
+        mockView = new MockView("", "1");
+        controller = new EventPerformanceController(mockView, paymentSystem);
+
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
+                "Student Name", 1234567));
+        setupEventAndPerformance();
+
+        controller.viewPerformance();
+
+        assertTrue(mockView.errorMessages.stream().anyMatch(message -> message.contains("Invalid input")));
+    }
+
+    @Test
+    void displaysFullDetailsSuccessfullyEverything() throws Exception {
         mockView = new MockView("a", "9", "51", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
@@ -203,5 +218,76 @@ public class ViewPerformanceSystemTest {
         // check reviews
         assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("Amazing")));
         assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("Coool")));
+    }
+
+    @Test
+    void eventNotFoundShoulShowError() throws Exception {
+        mockView = new MockView("1");
+        controller = new EventPerformanceController(mockView, paymentSystem);
+
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
+                "Student Name", 1234567));
+        Event event = setupEventAndPerformance();
+
+        // remove event
+        event.getPerformances().clear();
+        Field eventsField = EventPerformanceController.class.getDeclaredField("events");
+        eventsField.setAccessible(true);
+        Collection<Event> events = (Collection<Event>) eventsField.get(controller);
+        events.clear();
+
+        controller.viewPerformance();
+
+        assertTrue(mockView.errorMessages.contains("Associated event not found"));
+    }
+
+    @Test
+    void noReviewsShowNoReviewsMessage() throws Exception {
+        mockView = new MockView("1");
+        controller = new EventPerformanceController(mockView, paymentSystem);
+
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
+                "Student Name", 1234567));
+
+        EntertainmentProvider ep = new EntertainmentProvider("ep1@ed.ac.uk",
+                "epPass1", "OrgName", "BN005", "Alice EP", "description");
+
+        Event event = new Event(1, "Concert", EventType.Music, true);
+        event.setOrganizer(ep);
+
+        Performance p = event.createPerformance(1L,
+                LocalDateTime.of(2026, 4, 10, 19, 0),
+                LocalDateTime.of(2026, 4, 10, 21, 0),
+                List.of("Band A"),
+                "Main Hall",
+                100,
+                false,
+                false,
+                50,
+                15.0);
+
+        controller.addEvent(event);
+        controller.addPerformance(p);
+
+        controller.viewPerformance();
+
+        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("No reviews were added to this event yet")));
+    }
+
+    @Test
+    void cancelledPerformanceShouldBeDisplayable() throws Exception {
+        mockView = new MockView("1");
+        controller = new EventPerformanceController(mockView, paymentSystem);
+
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
+                "Student Name", 1234567));
+        Event event = setupEventAndPerformance();
+
+        Performance p = event.getPerformances().iterator().next();
+        p.cancel();
+
+        controller.viewPerformance();
+
+        assertFalse(mockView.performanceOutputs.isEmpty());
     }
 }

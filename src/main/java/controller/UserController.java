@@ -130,7 +130,7 @@ public class UserController extends Controller {
 
             description = view.getInput("Description: ");
             if (description.isEmpty()){
-                view.displayError("empty");
+                view.displayError("Description cannot be empty.");
                 continue;
             }
 

@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
  */
 public class BookingController extends Controller {
     private long nextBookingNumber;
-    private static Collection<Booking> bookings;
-    private PaymentSystem paymentSystem;
-    private EventPerformanceController eventPerformanceController;
+    private final Collection<Booking> bookings;
+    private final PaymentSystem paymentSystem;
+    private final EventPerformanceController eventPerformanceController;
 
     /**
      * Constructs BookingController.
@@ -28,11 +28,11 @@ public class BookingController extends Controller {
      * @param view UI view
      * @param eventPerformanceController shared event/performance controller
      */
-    public BookingController(View view, EventPerformanceController eventPerformanceController) {
+    public BookingController(View view, PaymentSystem paymentSystem, EventPerformanceController eventPerformanceController) {
         this.nextBookingNumber = 1;
         this.view = view;
         this.bookings = new ArrayList<>();
-        this.paymentSystem = new MockPaymentSystem();
+        this.paymentSystem = paymentSystem;
         this.eventPerformanceController = eventPerformanceController;
 
     }
@@ -43,7 +43,6 @@ public class BookingController extends Controller {
      * @return true if current user is student
      */
     private boolean ensureStudent() {
-        View view = new TextUserInterface();
         if (!checkCurrentUserIsStudent()) {
             view.displayError("Only students can perform this action.");
             return false;
@@ -90,7 +89,6 @@ public class BookingController extends Controller {
         }
 
         if (!checkIfBookingPossible(performance, numTickets)) {
-            view.displayError("Not enough tickets available.");
             return;
         }
 
@@ -271,7 +269,7 @@ public class BookingController extends Controller {
      *
      * @param booking booking to remove
      */
-    public static void removeBookingFromSystem(Booking booking) {
+    public void removeBookingFromSystem(Booking booking) {
         bookings.remove(booking);
     }
 

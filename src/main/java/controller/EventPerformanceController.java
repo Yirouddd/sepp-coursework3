@@ -37,13 +37,13 @@ public class EventPerformanceController extends Controller {
      *
      * @param view UI view
      */
-    public EventPerformanceController(View view) {
+    public EventPerformanceController(View view, PaymentSystem paymentSystem) {
         this.nextEventID = 1;
         this.nextPerformanceID = 1;
         this.view = view;
         this.events = new ArrayList<>();
         this.performances = new ArrayList<>();
-        this.paymentSystem = new MockPaymentSystem();
+        this.paymentSystem = paymentSystem;
     }
 
     /**
@@ -368,17 +368,6 @@ public class EventPerformanceController extends Controller {
         }
 
         // message
-        while (true) {
-            organiserMessage = view.getInput("Provide a cancellation message for affected students: ");
-
-            if (organiserMessage == null || organiserMessage.trim().isEmpty()) {
-                view.displayError("Please provide a non-empty message for the students.");
-                continue;
-            }
-            break;
-        }
-
-
         if (performance.hasActiveBooking()) {
             while (true) {
                 organiserMessage = view.getInput("Provide a cancellation message for affected students: ").trim();
@@ -420,7 +409,6 @@ public class EventPerformanceController extends Controller {
                 booking.cancelByProvider();
                 booking.getStudent().removeBooking(booking);
                 performance.removeBooking(booking);
-                BookingController.removeBookingFromSystem(booking);
             }
         }
 

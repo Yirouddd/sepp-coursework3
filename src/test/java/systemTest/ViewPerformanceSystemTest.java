@@ -3,6 +3,8 @@ package systemTest;
 import controller.Controller;
 import controller.EventPerformanceController;
 import enums.EventType;
+import external.MockPaymentSystem;
+import external.PaymentSystem;
 import interfaces.View;
 import object.Event;
 import object.Performance;
@@ -22,6 +24,7 @@ public class ViewPerformanceSystemTest {
 
     private EventPerformanceController controller;
     private MockView mockView;
+    private PaymentSystem paymentSystem;
 
     private static class MockView implements View {
         private final Queue<String> inputs = new ArrayDeque<>();
@@ -71,7 +74,8 @@ public class ViewPerformanceSystemTest {
     @BeforeEach
     void setup() {
         mockView = new MockView();
-        controller = new EventPerformanceController(mockView);
+        paymentSystem = new MockPaymentSystem();
+        controller = new EventPerformanceController(mockView, paymentSystem);
     }
 
     private void setCurrentUser(Object user) throws Exception {
@@ -127,7 +131,7 @@ public class ViewPerformanceSystemTest {
     @Test
     void testInvalidInputHandling() throws Exception{
         mockView = new MockView("ab", "1");
-        controller = new EventPerformanceController(mockView);
+        controller = new EventPerformanceController(mockView, paymentSystem);
 
         setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
                 "Student Name", 1234567));
@@ -143,7 +147,7 @@ public class ViewPerformanceSystemTest {
     @Test
     void testInvalidPerformanceID() throws Exception {
         mockView = new MockView("10", "1");
-        controller = new EventPerformanceController(mockView);
+        controller = new EventPerformanceController(mockView, paymentSystem);
 
         setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
                 "Student Name", 1234567));
@@ -158,7 +162,7 @@ public class ViewPerformanceSystemTest {
     @Test
     void shouldFailAfterManyAttempts() throws Exception {
         mockView = new MockView("8", "9", "3", "4", "5", "6", "7", "8");
-        controller = new EventPerformanceController(mockView);
+        controller = new EventPerformanceController(mockView, paymentSystem);
 
         setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
                 "Student Name", 1234567));
@@ -174,7 +178,7 @@ public class ViewPerformanceSystemTest {
     @Test
     void displaysFullDetailsSuccessfully() throws Exception {
         mockView = new MockView("a", "9", "51", "1");
-        controller = new EventPerformanceController(mockView);
+        controller = new EventPerformanceController(mockView, paymentSystem);
 
         setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
                 "Student Name", 1234567));

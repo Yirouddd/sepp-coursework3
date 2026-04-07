@@ -33,8 +33,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * System tests for cancel booking use case.
+/*
+  System tests for cancel booking use case.
  */
 public class CancelBookingSystemTests {
 

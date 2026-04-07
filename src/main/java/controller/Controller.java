@@ -64,6 +64,7 @@ public abstract class Controller {
     protected <T> int selectFromMenu(Collection<T> options) {
         if (options == null || options.isEmpty()) {
             view.displayError("Options cannot be null or empty.");
+            return -1;
         }
 
         Object[] optionArray = options.toArray();

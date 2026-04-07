@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /*
- * System tests for cancel performance use case.
+  System tests for cancel performance use case.
  */
 public class CancelPerformanceSystemTests {
 
@@ -63,6 +63,7 @@ public class CancelPerformanceSystemTests {
     private UserController userController;
     private EventPerformanceController eventPerformanceController;
     private BookingController bookingController;
+    private long nextSetupPerformanceId;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -98,6 +99,7 @@ public class CancelPerformanceSystemTests {
         );
         eventPerformanceController = new EventPerformanceController(mockView, paymentSystem);
         bookingController = new BookingController(mockView, paymentSystem, eventPerformanceController);
+        nextSetupPerformanceId = 1;
     }
 
     private void stubInputs(String... inputs) {
@@ -130,6 +132,10 @@ public class CancelPerformanceSystemTests {
         return provider;
     }
 
+    private String nextPerformanceIdInput() {
+        return String.valueOf(nextSetupPerformanceId++);
+    }
+
     /*
       Helper for setup. We use create event use case first,
       because cancel performance needs an existing performance.
@@ -149,6 +155,7 @@ public class CancelPerformanceSystemTests {
                 eventTitle,
                 eventType.name().toLowerCase(),
                 "yes",
+                nextPerformanceIdInput(),
                 formatDateTime(start),
                 formatDateTime(end),
                 "name1, name2",

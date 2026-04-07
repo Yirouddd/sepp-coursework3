@@ -63,6 +63,7 @@ public class SearchForPerformancesSystemTests {
 
     private UserController userController;
     private EventPerformanceController eventPerformanceController;
+    private long nextSetupPerformanceId;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -89,6 +90,7 @@ public class SearchForPerformancesSystemTests {
                 adminsFile.toString()
         );
         eventPerformanceController = new EventPerformanceController(mockView, paymentSystem);
+        nextSetupPerformanceId = 1;
     }
 
     /*
@@ -115,6 +117,10 @@ public class SearchForPerformancesSystemTests {
         return provider;
     }
 
+    private String nextPerformanceIdInput() {
+        return String.valueOf(nextSetupPerformanceId++);
+    }
+
     /*
       We use create event use case to make performances for search tests.
      */
@@ -131,6 +137,7 @@ public class SearchForPerformancesSystemTests {
                 eventTitle,
                 eventType.name().toLowerCase(),
                 "yes",
+                nextPerformanceIdInput(),
                 formatDateTime(start),
                 formatDateTime(end),
                 "name1, name2",
@@ -165,6 +172,7 @@ public class SearchForPerformancesSystemTests {
                 eventTitle,
                 eventType.name().toLowerCase(),
                 "no",
+                nextPerformanceIdInput(),
                 formatDateTime(start),
                 formatDateTime(end),
                 "name1",

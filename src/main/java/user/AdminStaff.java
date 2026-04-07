@@ -1,7 +1,7 @@
 package user;
 
 /**
- * AdminStaff class represents an admin staff with a name.
+ * Represents an admin staff with a name.
  */
 public class AdminStaff extends User {
     private String name;
@@ -9,9 +9,9 @@ public class AdminStaff extends User {
     /**
      * Constructs a new AdminStaff with the specified details.
      *
-     * @param email admin email
-     * @param password admin password
-     * @param name admin name
+     * @param email the admin's email
+     * @param password the admin's password
+     * @param name the admin's name
      */
       public AdminStaff(String email, String password, String name) {
           this.name = name;
@@ -20,9 +20,9 @@ public class AdminStaff extends User {
       }
 
     /**
-     * Gets the admin's name.
+     * Returns the admin's name.
      *
-     * @return admin name
+     * @return the admin's name
      */
      public String getName() {
          return name;

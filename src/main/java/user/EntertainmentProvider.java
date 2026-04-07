@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A class representing an entertainment provider.
+ * Representing an entertainment provider with organisation details and events.
  */
 
 public class EntertainmentProvider extends User {
@@ -17,14 +17,14 @@ public class EntertainmentProvider extends User {
     private List<Event> events;
 
     /**
-     * Constructs an entertainment provider.
+     * Constructs an entertainment provider with the given details.
      *
-     * @param email provider email
-     * @param password provider password
-     * @param orgName organisation name
-     * @param businessNumber business registration number
-     * @param name main contact name
-     * @param description organisation description
+     * @param email the provider's email
+     * @param password the provider's password
+     * @param orgName the organisation name
+     * @param businessNumber the business registration number
+     * @param name the main contact name
+     * @param description the organisation description
      */
     public EntertainmentProvider(String email, String password, String orgName,
                                  String businessNumber, String name, String description) {
@@ -40,7 +40,7 @@ public class EntertainmentProvider extends User {
     /**
      * Adds an event to the provider.
      *
-     * @param event event to add
+     * @param event the event to add
      */
     public void addEvent(Event event) {
         if (event != null && !events.contains(event)) {
@@ -49,22 +49,37 @@ public class EntertainmentProvider extends User {
     }
 
     /**
-     * Gets the organization name
+     * Returns the organization name
      *
-     * @return orgName organisation name
+     * @return the organisation name
      */
     public String getOrgName() {
         return orgName;
     }
 
+    /**
+     * Removes an event to the provider.
+     *
+     * @param event the event to remove
+     */
     public void removeEvent(Event event) {
         events.remove(event);
     }
 
+    /**
+     * Returns the business registration number.
+     *
+     * @return the business number
+     */
     public String getBusinessNumber() {
         return businessNumber;
     }
 
+    /**
+     * Returns the list of events.
+     *
+     * @return the events
+     */
     public List<Event> getEvents() {
         return events;
     }

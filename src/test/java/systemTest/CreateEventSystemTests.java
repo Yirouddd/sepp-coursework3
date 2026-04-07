@@ -22,10 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /*
- * System tests for the create event use case.
- *
- * These tests call the real createEvent() use-case method and use Mockito to
- * simulate the UI input and to check the visible output messages.
+  System tests for the create event use case.
  */
 public class CreateEventSystemTests {
 
@@ -72,8 +69,8 @@ public class CreateEventSystemTests {
     }
 
     /*
-     * Main success case for a ticketed event.
-     * It should create the event, create one performance, and attach the event to the provider.
+      Main success case for a ticketed event.
+      It should create the event, create one performance, and attach the event to the provider.
      */
     @Test
     void shouldCreateTicketedEventWithOnePerformanceAndSaveItForProvider() {
@@ -136,8 +133,8 @@ public class CreateEventSystemTests {
     }
 
     /*
-     * Non-ticketed events should skip ticket count and price questions.
-     * This test also checks that blank performer input is accepted.
+      Non-ticketed events should skip ticket count and price questions.
+      This test also checks that blank performer input is accepted.
      */
     @Test
     void shouldCreateNonTicketedEventWithoutAskingForTicketFields() {
@@ -175,9 +172,9 @@ public class CreateEventSystemTests {
         verify(mockView, never()).getInput("Enter ticket price: ");
     }
 
-    /**
-     * Access control is important here.
-     * Admin users must not be able to create events.
+    /*
+      Access control is important here.
+      Admin users must not be able to create events.
      */
     @Test
     void shouldRejectCreateEventWhenCurrentUserIsAdmin() {
@@ -190,8 +187,8 @@ public class CreateEventSystemTests {
         verify(mockView, never()).displaySuccess(anyString());
     }
 
-    /**
-     * Student users must also be rejected.
+    /*
+      Student users must also be rejected.
      */
     @Test
     void shouldRejectCreateEventWhenCurrentUserIsStudent() {
@@ -204,9 +201,9 @@ public class CreateEventSystemTests {
         verify(mockView, never()).displaySuccess(anyString());
     }
 
-    /**
-     * Event title is mandatory.
-     * When it is blank, the use case should stop directly.
+    /*
+      Event title is mandatory.
+      When it is blank, the use case should stop directly.
      */
     @Test
     void shouldRejectEmptyEventTitle() {
@@ -223,8 +220,8 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * A provider should not create two events with the same title.
+    /*
+      A provider should not create two events with the same title.
      */
     @Test
     void shouldRejectDuplicateEventTitleForSameProvider() {
@@ -242,9 +239,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * Event type entry is validated in a loop.
-     * The system should continue asking until the EP gives one supported value.
+    /*
+      Event type entry is validated in a loop.
+      The system should continue asking until the EP gives one supported value.
      */
     @Test
     void shouldKeepAskingUntilValidEventTypeIsGiven() {
@@ -276,9 +273,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * yes/no questions are validated too.
-     * This checks the first yes/no question in the use case.
+    /*
+      yes/no questions are validated too.
+      This checks the first yes/no question in the use case.
      */
     @Test
     void shouldKeepAskingUntilValidTicketedAnswerIsGiven() {
@@ -310,8 +307,8 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * Date and time format is also validated in a loop.
+    /*
+      Date and time format is also validated in a loop.
      */
     @Test
     void shouldKeepAskingUntilValidDateTimeFormatIsGiven() {
@@ -344,10 +341,10 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * If the first performance is invalid because the end is before the start,
-     * the current implementation ends the use case with no event created.
-     * This test documents that current system behaviour clearly.
+    /*
+      If the first performance is invalid because the end is before the start,
+      the current implementation ends the use case with no event created.
+      This test documents that current system behaviour clearly.
      */
     @Test
     void shouldAbortEventCreationWhenFirstPerformanceEndIsNotAfterStart() {
@@ -372,8 +369,8 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * Venue capacity is validated in a loop with positive integers only.
+    /*
+      Venue capacity is validated in a loop with positive integers only.
      */
     @Test
     void shouldKeepAskingUntilVenueCapacityIsPositiveInteger() {
@@ -405,9 +402,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * Ticket count and ticket price are important for ticketed events.
-     * Both inputs should be retried until valid values are given.
+    /*
+      Ticket count and ticket price are important for ticketed events.
+      Both inputs should be retried until valid values are given.
      */
     @Test
     void shouldKeepAskingUntilTicketFieldsAreValid() {
@@ -447,9 +444,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * This test checks the multi-performance path.
-     * Two non-overlapping performances should both be attached to the same event.
+    /*
+      This test checks the multi-performance path.
+      Two non-overlapping performances should both be attached to the same event.
      */
     @Test
     void shouldCreateTwoPerformancesForTheSameEvent() {
@@ -492,9 +489,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * Overlap should be rejected for the second performance of the same event.
-     * After that, the provider can still enter another valid second performance.
+    /*
+      Overlap should be rejected for the second performance of the same event.
+      After that, the provider can still enter another valid second performance.
      */
     @Test
     void shouldRejectOverlappingSecondPerformanceThenAcceptNonOverlappingReplacement() {
@@ -539,9 +536,9 @@ public class CreateEventSystemTests {
         );
     }
 
-    /**
-     * The final yes/no question should also retry until valid.
-     * This is a small but useful UI validation path.
+    /*
+      The final yes/no question should also retry until valid.
+      This is a small but useful UI validation path.
      */
     @Test
     void shouldKeepAskingUntilValidAddAnotherAnswerIsGiven() {

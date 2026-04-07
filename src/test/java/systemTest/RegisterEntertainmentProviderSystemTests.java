@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * System tests for register entertainment provider use case.
- * In this class we try success case and several error cases too.
+/*
+  System tests for register entertainment provider use case.
+  In this class we try success case and several error cases too.
  */
 public class RegisterEntertainmentProviderSystemTests {
 
@@ -92,9 +92,9 @@ public class RegisterEntertainmentProviderSystemTests {
         userController.getUsers().put(email, provider);
     }
 
-    /**
-     * This test checks the normal register flow.
-     * After success, provider should be saved and logged in.
+    /*
+      This test checks the normal register flow.
+      After success, provider should be saved and logged in.
      */
     @Test
     void shouldRegisterProviderAndLogThemInWhenAllDetailsAreValid() {
@@ -127,9 +127,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks invalid email first.
-     * System should show error and ask again.
+    /*
+      This test checks invalid email first.
+      System should show error and ask again.
      */
     @Test
     void shouldRejectInvalidEmailThenRegisterSuccessfullyAfterRetry() {
@@ -156,9 +156,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks empty password.
-     * Register should not finish until password is given.
+    /*
+      This test checks empty password.
+      Register should not finish until password is given.
      */
     @Test
     void shouldRejectEmptyPasswordThenRegisterSuccessfullyAfterRetry() {
@@ -187,9 +187,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks business verification fail.
-     * Account should not be made until number is verified.
+    /*
+      This test checks business verification fail.
+      Account should not be made until number is verified.
      */
     @Test
     void shouldRetryAfterBusinessVerificationFailsThenRegisterSuccessfully() {
@@ -225,9 +225,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks duplicate email.
-     * Same email should not be used again.
+    /*
+      This test checks duplicate email.
+      Same email should not be used again.
      */
     @Test
     void shouldRejectDuplicateEmailThenAllowRegistrationWithAnotherEmail() {
@@ -269,9 +269,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks same organisation and same business number.
-     * In this case system should say provider already exists.
+    /*
+      This test checks same organisation and same business number.
+      In this case system should say provider already exists.
      */
     @Test
     void shouldRejectExistingProviderWithSameOrganisationAndBusinessNumberThenAllowRetry() {
@@ -311,9 +311,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks empty contact name.
-     * Main contact person is required before finish.
+    /*
+      This test checks empty contact name.
+      Main contact person is required before finish.
      */
     @Test
     void shouldRejectEmptyContactNameThenRegisterSuccessfullyAfterRetry() {
@@ -345,9 +345,9 @@ public class RegisterEntertainmentProviderSystemTests {
         );
     }
 
-    /**
-     * This test checks empty description.
-     * Register should not finish until description is entered.
+    /*
+      This test checks empty description.
+      Register should not finish until description is entered.
      */
     @Test
     void shouldRejectEmptyDescriptionThenRegisterSuccessfullyAfterRetry() {

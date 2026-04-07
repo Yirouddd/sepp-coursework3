@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * System tests for review performance use case.
+/*
+  System tests for review performance use case.
  */
 public class ReviewPerformanceSystemTest {
 
@@ -51,9 +51,9 @@ public class ReviewPerformanceSystemTest {
         ep1 = new EntertainmentProvider("ep1@test.com", "pass1", "org1", "bn1", "name1", "desc1");
     }
 
-    /**
-     * This checks the main success path.
-     * Student booked the past performance, gives rating and comment, and review is stored.
+    /*
+      This checks the main success path.
+      Student booked the past performance, gives rating and comment, and review is stored.
      */
     @Test
     void shouldAcceptReviewForBookedPastPerformanceWithComment() {
@@ -81,9 +81,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView, never()).displayError("Only students can perform this action.");
     }
 
-    /**
-     * Comment is optional in this use case.
-     * So empty comment should still work and should be stored as empty string.
+    /*
+      Comment is optional in this use case.
+      So empty comment should still work and should be stored as empty string.
      */
     @Test
     void shouldAcceptReviewWithRatingOnlyAndStoreEmptyComment() {
@@ -106,9 +106,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView).displaySuccess("Review submitted successfully.");
     }
 
-    /**
-     * The controller keeps asking until performance id is a valid number and exists.
-     * This test checks one wrong text id first, then a missing numeric id, then the valid one.
+    /*
+      The controller keeps asking until performance id is a valid number and exists.
+      This test checks one wrong text id first, then a missing numeric id, then the valid one.
      */
     @Test
     void shouldRetryWhenPerformanceIdIsTextOrUnknownThenAcceptValidId() {
@@ -131,9 +131,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView).displaySuccess("Review submitted successfully.");
     }
 
-    /**
-     * This checks the rating loop.
-     * User first gives text and then out of range values, then finally a valid rating.
+    /*
+      This checks the rating loop.
+      User first gives text and then out of range values, then finally a valid rating.
      */
     @Test
     void shouldRetryWhenRatingIsNotNumericOrOutsideRange() {
@@ -158,9 +158,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView).displaySuccess("Review submitted successfully.");
     }
 
-    /**
-     * A performance in future should not be reviewed yet.
-     * Even if the same student booked it before, the controller should stop the review.
+    /*
+      A performance in future should not be reviewed yet.
+      Even if the same student booked it before, the controller should stop the review.
      */
     @Test
     void shouldRejectReviewForFuturePerformanceEvenIfBookedByStudent() {
@@ -182,9 +182,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView, never()).displaySuccess("Review submitted successfully.");
     }
 
-    /**
-     * Student must really own the booking.
-     * If another student booked it, review must be rejected.
+    /*
+      Student must really own the booking.
+      If another student booked it, review must be rejected.
      */
     @Test
     void shouldRejectReviewForPastPerformanceBookedByAnotherStudent() {
@@ -205,9 +205,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView).displayError("You can only review a performance you booked.");
     }
 
-    /**
-     * Same student but the booking is not active anymore.
-     * The controller only accepts an active booking for review.
+    /*
+      Same student but the booking is not active anymore.
+      The controller only accepts an active booking for review.
      */
     @Test
     void shouldRejectReviewWhenStudentsBookingIsNoLongerActive() {
@@ -228,9 +228,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView).displayError("You can only review a performance you booked.");
     }
 
-    /**
-     * Only students can use this entry point.
-     * Admin user should be blocked before any review logic starts.
+    /*
+      Only students can use this entry point.
+      Admin user should be blocked before any review logic starts.
      */
     @Test
     void shouldRejectReviewWhenCurrentUserIsNotStudent() {
@@ -243,9 +243,9 @@ public class ReviewPerformanceSystemTest {
         verify(mockView, never()).getInput(anyString());
     }
 
-    /**
-     * This test checks review state integration a bit more.
-     * If there is already one review, a new one should change the average correctly.
+    /*
+      This test checks review state integration a bit more.
+      If there is already one review, a new one should change the average correctly.
      */
     @Test
     void shouldUpdateAverageRatingWhenNewReviewIsAddedToExistingReviews() {

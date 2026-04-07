@@ -3,7 +3,7 @@ package user;
 import enums.EventType;
 
 /**
- * Student preferences for event types.
+ * Stores a student's preferences for different event types.
  */
 public class StudentPreferences {
     public boolean preferMusicEvents;
@@ -13,6 +13,16 @@ public class StudentPreferences {
     public boolean preferSportsEvents;
     public boolean preferGamesEvents;
 
+    /**
+     * Constructs student preferences with the given selections.
+     *
+     * @param preferMusicEvents if music events are preferred
+     * @param preferTheatreEvents if theatre events are preferred
+     * @param preferDanceEvents if dance events are preferred
+     * @param preferMovieEvents if movie events are preferred
+     * @param preferSportsEvents if sports events are preferred
+     * @param preferGamesEvents if games events are preferred
+     */
     public StudentPreferences(boolean preferMusicEvents,
                               boolean preferTheatreEvents,
                               boolean preferDanceEvents,
@@ -28,10 +38,10 @@ public class StudentPreferences {
     }
 
     /**
-     * Checks if an event type matches the student's preferences.
+     * Checks if the given event type matches the student's preferences.
      *
-     * @param eventType event type
-     * @return true if preferred, false otherwise
+     * @param eventType the event type to be checked
+     * @return true if the event type is preferred, false otherwise
      */
     public boolean matchesStudentPreference(EventType eventType) {
         if (eventType == null) {
@@ -49,9 +59,11 @@ public class StudentPreferences {
     }
 
     /**
-     * Replaces the student's preferences with the new selection.
+     * Updates the student's preferences with the new selection from a comma-separated preference list.
      *
-     * @param studentRawStringPreferences comma-separated preference list
+     * @param studentRawStringPreferences the input preferences
+     * @return true if the update was successful, false if not (input is
+     * invalid)
      */
     public boolean updatePreferences(String studentRawStringPreferences) {
         if (studentRawStringPreferences == null || studentRawStringPreferences.trim().isEmpty()) {

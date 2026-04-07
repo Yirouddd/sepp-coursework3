@@ -41,10 +41,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
+/*
  * System tests for cancel performance use case.
- *
- * These tests try to check the main paths and also some wrong inputs.
  */
 public class CancelPerformanceSystemTests {
 
@@ -132,9 +130,9 @@ public class CancelPerformanceSystemTests {
         return provider;
     }
 
-    /**
-     * Helper for setup. We use create event use case first,
-     * because cancel performance needs an existing performance.
+    /*
+      Helper for setup. We use create event use case first,
+      because cancel performance needs an existing performance.
      */
     private Event createTicketedEvent(
             EntertainmentProvider provider,
@@ -169,8 +167,8 @@ public class CancelPerformanceSystemTests {
         return event;
     }
 
-    /**
-     * Helper for setup. It makes one booking using booking use case.
+    /*
+      Helper for setup. It makes one booking using booking use case.
      */
     private Booking createBooking(Student student, Performance performance, int numTickets) {
         bookingController.setCurrentUser(student);

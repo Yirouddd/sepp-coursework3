@@ -26,12 +26,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * System tests for the student preference editing use case.
- *
- * <p>These tests exercise the use-case entry point in {@link UserController} and verify
- * both the externally visible feedback sent to the {@link View} and the resulting state
- * of the logged-in student's stored preferences.</p>
+/*
+  System tests for the student preference editing use case.
  */
 public class EditPreferencesSystemTests {
 
@@ -100,9 +96,9 @@ public class EditPreferencesSystemTests {
         return provider;
     }
 
-    /**
-     * Check happy path and also confirm design requirement: new choices replace older stored
-     * preferences, not just added after them.
+    /*
+      Check happy path and also confirm design requirement: new choices replace older stored
+      preferences, not just added after them.
      */
     @Test
     void shouldReplaceExistingPreferencesWhenStudentProvidesValidChoices() {
@@ -135,9 +131,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check that maximum allowed number of preferences is accepted when the list length
-     * is exactly three items.
+    /*
+      Check that maximum allowed number of preferences is accepted when the list length
+      is exactly three items.
      */
     @Test
     void shouldAcceptExactlyThreePreferences() {
@@ -170,9 +166,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check that controller accepts a single valid preference and still cleanly clears any
-     * previous set of preferences.
+    /*
+      Check that controller accepts a single valid preference and still cleanly clears any
+      previous set of preferences.
      */
     @Test
     void shouldAcceptSinglePreferenceAndClearAnyPreviousSelections() {
@@ -201,9 +197,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check that blank input is rejected, no partial change is saved, and user is asked again
-     * until a valid choice is provided.
+    /*
+      Check that blank input is rejected, no partial change is saved, and user is asked again
+      until a valid choice is provided.
      */
     @Test
     void shouldRejectEmptyInputThenAcceptValidRetry() {
@@ -230,9 +226,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check that unsupported preference names are rejected and system continues asking until
-     * a fully valid list is given.
+    /*
+      Check that unsupported preference names are rejected and system continues asking until
+      a fully valid list is given.
      */
     @Test
     void shouldRejectInvalidPreferenceThenAcceptValidRetry() {
@@ -257,9 +253,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check two different invalid-input cases in one test: duplicates and lists longer than
-     * the allowed maximum.
+    /*
+      Check two different invalid-input cases in one test: duplicates and lists longer than
+      the allowed maximum.
      */
     @Test
     void shouldRejectDuplicateAndTooManyPreferencesThenAcceptValidRetry() {
@@ -282,9 +278,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check input normalisation behaviour: extra spaces should be ignored and valid preference
-     * names should work even when typed in mixed case.
+    /*
+      Check input normalisation behaviour: extra spaces should be ignored and valid preference
+      names should work even when typed in mixed case.
      */
     @Test
     void shouldTreatPreferenceInputCaseInsensitivelyAndIgnoreExtraWhitespace() {
@@ -309,9 +305,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check access control for unauthorised logged-in users. Administrators should receive a
-     * clear error and system must not ask them for preference input.
+    /*
+      Check access control for unauthorised logged-in users. Administrators should receive a
+      clear error and system must not ask them for preference input.
      */
     @Test
     void shouldRejectPreferenceEditingForAdminUsers() {
@@ -325,9 +321,9 @@ public class EditPreferencesSystemTests {
         );
     }
 
-    /**
-     * Check same access control rule for entertainment providers so the use case is shown
-     * to be protected consistently for multiple non-student roles.
+    /*
+      Check same access control rule for entertainment providers so the use case is shown
+      to be protected consistently for multiple non-student roles.
      */
     @Test
     void shouldRejectPreferenceEditingForEntertainmentProviders() {

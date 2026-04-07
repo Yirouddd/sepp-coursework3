@@ -9,7 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Event class.
+ * Represents an event with a title, type, performances, and an entertainment
+ * provider.
  */
 public class Event {
     private long eventID;
@@ -25,7 +26,7 @@ public class Event {
      * @param eventID event id
      * @param eventTitle event title
      * @param type event type
-     * @param isTicketed whether event is ticketed
+     * @param isTicketed true if event is ticketed
      */
     public Event(long eventID, String eventTitle, EventType type, boolean isTicketed) {
         this.eventID = eventID;
@@ -38,7 +39,17 @@ public class Event {
     /**
      * Creates and adds a performance to this event.
      *
-     * @return newly created performance
+     * @param performanceID performance ID
+     * @param startDateTime start time
+     * @param endDateTime end time
+     * @param performerNames names of performers
+     * @param venueAddress venue address
+     * @param venueCapacity venue capacity
+     * @param venueIsOutdoors true if venue is outdoors
+     * @param venueIsSmoking true if smoking is allowed
+     * @param numTicketsTotal total tickets
+     * @param ticketPrice ticket price
+     * @return the created performance
      */
     public Performance createPerformance(long performanceID,
                                          LocalDateTime startDateTime,
@@ -68,10 +79,10 @@ public class Event {
     }
 
     /**
-     * Gets a performance by id.
+     * Returns a performance by its id.
      *
      * @param performanceID performance id
-     * @return performance or null
+     * @return the performance or null if not found
      */
     public Performance getPerformanceByID(long performanceID) {
         for (Performance p : performances) {
@@ -83,9 +94,9 @@ public class Event {
     }
 
     /**
-     * Returns info strings for performances on a specific date.
+     * Returns string information of performances on a specific date.
      *
-     * @param searchDate date/time to search by date component
+     * @param searchDate date/time to search by date
      * @return collection of performance info strings
      */
     public Collection<String> getInfoOfPerformancesOnDate(LocalDateTime searchDate) {
@@ -102,18 +113,28 @@ public class Event {
         return result;
     }
 
+    /**
+     * Returns the organiser's name.
+     *
+     * @return organiser name or "Unknown organiser" if not set
+     */
     public String getOrganiserName() {
         return entertainmentProvider == null ? "Unknown organiser" : entertainmentProvider.getOrgName();
     }
 
+    /**
+     * Returns the organiser's email.
+     *
+     * @return organiser name or "Unknown email" if not set
+     */
     public String getOrganiserEmail() {
         return entertainmentProvider == null ? "Unknown email" : entertainmentProvider.getEmail();
     }
 
     /**
-     * Computes average rating across performances that have reviews.
+     * Computes average rating across all performances that have reviews.
      *
-     * @return average rating
+     * @return average rating or 0.0 if no reviews exist
      */
     public double getAverageRatingOfPerformances() {
         if (performances.isEmpty()) {
@@ -135,9 +156,9 @@ public class Event {
     }
 
     /**
-     * Gets all reviews from all performances.
+     * Returns all reviews from all performances.
      *
-     * @return collection of review lines
+     * @return collection of review strings
      */
     public Collection<String> getAllPerformanceReviews() {
         List<String> reviews = new ArrayList<>();
@@ -162,7 +183,7 @@ public class Event {
     }
 
     /**
-     * Checks if this event already has a performance overlapping the given time.
+     * Checks if any performance overlaps with the given times.
      *
      * @param startDateTime start time
      * @param endDateTime end time
@@ -182,7 +203,7 @@ public class Event {
     /**
      * Adds a performance to the event.
      *
-     * @param p performance
+     * @param p performance to add
      */
     public void addPerformance(Performance p) {
         if (p != null && !performances.contains(p)) {
@@ -193,12 +214,17 @@ public class Event {
     /**
      * Removes a performance from the event.
      *
-     * @param p performance
+     * @param p performance to remove
      */
     public void removePerformance(Performance p) {
         performances.remove(p);
     }
 
+    /**
+     * Returns a string representation of the event.
+     *
+     * @return event details
+     */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -219,26 +245,56 @@ public class Event {
         return result.toString();
     }
 
+    /**
+     * Returns the event ID.
+     *
+     * @return event ID
+     */
     public long getEventID() {
         return eventID;
     }
 
+    /**
+     * Returns whether the event is ticketed.
+     *
+     * @return true if ticketed
+     */
     public boolean isTicketed() {
         return isTicketed;
     }
 
+    /**
+     * Returns the event title.
+     *
+     * @return event title
+     */
     public String getEventTitle() {
         return eventTitle;
     }
 
+    /**
+     * Returns the event type.
+     *
+     * @return event type
+     */
     public EventType getEventType() {
         return type;
     }
 
+    /**
+     * Sets the entertainment provider for this event.
+     *
+     * @param entertainmentProvider provider to set
+     */
     public void setOrganizer(EntertainmentProvider entertainmentProvider) {
         this.entertainmentProvider = entertainmentProvider;
     }
 
+    /**
+     * Returns all performances of the event.
+     *
+     * @return list of performances
+     */
     public List<Performance> getPerformances() {
         return new ArrayList<>(performances);
     }

@@ -2,8 +2,6 @@ package controller;
 
 import enums.BookingStatus;
 import enums.PerformanceStatus;
-import external.MockPaymentSystem;
-import interfaces.TextUserInterface;
 import object.Booking;
 import object.Performance;
 import user.Student;
@@ -14,7 +12,8 @@ import java.util.Collection;
 import java.time.LocalDateTime;
 
 /**
- * Menu controller for the text-based app.
+ * BookingController handles booking, reviewing and cancelling performances
+ * for students in the system.
  */
 public class BookingController extends Controller {
     private long nextBookingNumber;
@@ -25,7 +24,7 @@ public class BookingController extends Controller {
     /**
      * Constructs BookingController.
      *
-     * @param view UI view
+     * @param view UI view for input and output
      * @param eventPerformanceController shared event/performance controller
      */
     public BookingController(View view, PaymentSystem paymentSystem, EventPerformanceController eventPerformanceController) {
@@ -38,9 +37,10 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Shared helper to ensure current user is a student.
+     * Helper
+     * Ensures that the current user is a student.
      *
-     * @return true if current user is student
+     * @return true if current user is student, false otherwise
      */
     private boolean ensureStudent() {
         if (!checkCurrentUserIsStudent()) {
@@ -51,7 +51,9 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Books a performance.
+     * Books a performance for the logged in student.
+     * Validates ticket availability and processes payment.
+     * If success stores booking in system.
      */
     public void bookPerformance() {
         if (!ensureStudent()){
@@ -126,7 +128,8 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Reviews a performance.
+     * Allows student to review a performance they have booked.
+     * Validates that performance has occurred and student has active booking.
      */
     public void reviewPerformance() {
         if (!ensureStudent()) {
@@ -195,7 +198,9 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Cancels a booking.
+     * Cancels a booking for a student.
+     * Requires the booking to be at least 24 hours away.
+     * If payment was successful processes a refund.
      */
     public void cancelBooking() {
         if (!ensureStudent()) {
@@ -234,7 +239,7 @@ public class BookingController extends Controller {
                 booking.getNumTickets(),
                 booking.getPerformance().getEventTitle(),
                 booking.getStudentEmail(),
-                booking.getStudentPhone(),
+                booking.getStudentPhoneNumber(),
                 booking.getPerformance().getOrganiserEmail(),
                 booking.getTransactionAmount(),
                 null
@@ -254,9 +259,9 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Adds booking to system store.
+     * Adds booking to the system store.
      *
-     * @param b booking
+     * @param b booking to add
      */
     private void addBooking(Booking b) {
         if (b != null) {
@@ -265,7 +270,7 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Removes booking from shared booking store.
+     * Removes a booking from the booking store.
      *
      * @param booking booking to remove
      */
@@ -274,10 +279,10 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Looks up performance by id using shared performance controller.
+     * Looks up performance by its ID using the shared performance controller.
      *
-     * @param performanceID performance id
-     * @return performance or null
+     * @param performanceID performance ID
+     * @return performance or nullif not found
      */
     private Performance getPerformanceByID(long performanceID) {
         return eventPerformanceController.getPerformanceByID(performanceID);
@@ -285,11 +290,12 @@ public class BookingController extends Controller {
 
 
     /**
-     * Checks whether booking can proceed.
+     * Checks whether a booking can proceed by given a performance and
+     * requested tickets.
      *
-     * @param performance performance
-     * @param numTickets requested tickets
-     * @return true if booking is allowed
+     * @param performance the performance to book
+     * @param numTickets number of requested tickets
+     * @return true if booking is allowed, false otherwise
      */
     private boolean checkIfBookingPossible(Performance performance, int numTickets) {
         if (performance == null) {
@@ -326,10 +332,10 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Finds bookings by event id.
+     * Finds all bookings by a given event ID.
      *
-     * @param eventID event id
-     * @return matching bookings
+     * @param eventID event ID
+     * @return collection of matching bookings
      */
     private Collection<Booking> findBookingsByEventID(long eventID) {
         Collection<Booking> result = new ArrayList<>();
@@ -342,10 +348,10 @@ public class BookingController extends Controller {
     }
 
     /**
-     * Gets booking by booking number.
+     * Retrieves a booking by its booking number.
      *
      * @param bookingNumber booking number
-     * @return booking or null
+     * @return booking or null if not found
      */
     private Booking getBookingByNumber(long bookingNumber) {
         for (Booking booking : bookings) {

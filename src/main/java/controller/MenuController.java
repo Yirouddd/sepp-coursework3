@@ -11,18 +11,25 @@ import java.util.Collection;
 
 /**
  * MenuController handles the display of the menus and user interaction with the
- * system.
+ * system for different roles such as Guest, Student, Admin Staff,
+ * Entertainment Provider.
  */
 public class MenuController extends Controller {
     final private UserController userController;
     final private EventPerformanceController eventPerformanceController;
     final private BookingController bookingController;
 
+    /**
+     * Guest menu options.
+     */
     public enum GuestMenuOptions {
         LOGIN,
         REGISTER_EP
     }
 
+    /**
+     * Student menu options.
+     */
     public enum StudentMenuOptions {
         LOGOUT,
         SEARCH_FOR_PERFORMANCES,
@@ -33,6 +40,9 @@ public class MenuController extends Controller {
         CANCEL_BOOKING
     }
 
+    /**
+     * Entertainment Provider menu options.
+     */
     public enum EPMenuOptions {
         LOGOUT,
         SEARCH_FOR_PERFORMANCES,
@@ -41,6 +51,9 @@ public class MenuController extends Controller {
         CANCEL_PERFORMANCE
     }
 
+    /**
+     * Admin menu options.
+     */
     public enum AdminMenuOptions {
         LOGOUT,
         SEARCH_FOR_PERFORMANCES,
@@ -49,11 +62,11 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Constructs MenuController.
+     * Constructs a MenuController.
      *
-     * @param view UI view
-     * @param preregistedUsersFilePath student data file
-     * @param preregistedAdminFilePath admin data file
+     * @param view UI view for input and output
+     * @param preregistedUsersFilePath file path of preregistered student users
+     * @param preregistedAdminFilePath file path of preregistered admin staff
      */
     public MenuController(View view, String preregistedUsersFilePath, String preregistedAdminFilePath) {
         this.view = view;
@@ -67,7 +80,7 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Synchronises logged-in user across controllers.
+     * Synchronises the currently logged-in user across all controllers.
      */
     private void syncCurrentUserAcrossControllers() {
         User user = userController.getCurrentUser();
@@ -77,7 +90,8 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Main application loop.
+     * Runs teh main application loop to display menus corresponding to a
+     * specific role.
      */
     public void mainMenu() {
         while (true) {
@@ -96,9 +110,9 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Handles guest menu.
+     * Displays and handles the guest menu options.
      *
-     * @return true if menu should return
+     * @return true if menu should return to previous
      */
     private boolean handleGuestMainMenu() {
         Collection<String> options = new ArrayList<>();
@@ -123,9 +137,9 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Handles student menu.
+     * Displays and handles the student menu options.
      *
-     * @return true if menu should return
+     * @return true if menu should return to previous
      */
     private boolean handleStudentMainMenu() {
         Collection<String> options = new ArrayList<>();
@@ -165,9 +179,9 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Handles entertainment provider menu.
+     * Displays and handles the entertainment provider menu options.
      *
-     * @return true if menu should return
+     * @return true if menu should return to previous
      */
     private boolean handleEntertainmentProviderMainMenu() {
         Collection<String> options = new ArrayList<>();
@@ -201,9 +215,9 @@ public class MenuController extends Controller {
     }
 
     /**
-     * Handles admin menu.
+     * Displays and handles the admin menu options.
      *
-     * @return true if menu should return
+     * @return true if menu should return to previous
      */
     private boolean handleAdminStaffMainMenu() {
         Collection<String> options = new ArrayList<>();

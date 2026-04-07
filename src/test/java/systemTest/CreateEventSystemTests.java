@@ -48,7 +48,8 @@ public class CreateEventSystemTests {
     }
 
     private void stubInputs(String... inputs) {
-        when(mockView.getInput(anyString())).thenReturn(inputs[0], java.util.Arrays.copyOfRange(inputs, 1, inputs.length));
+        when(mockView.getInput(anyString()))
+                .thenReturn(inputs[0], java.util.Arrays.copyOfRange(inputs, 1, inputs.length));
     }
 
     private List<String> capturedSuccessMessages() {
@@ -68,6 +69,35 @@ public class CreateEventSystemTests {
                 "Expected message not found: " + expected + " | Actual messages: " + messages);
     }
 
+    private void addExistingEventForProvider(
+            String eventTitle,
+            EventType eventType,
+            boolean ticketed,
+            long performanceId,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+        Event existingEvent = new Event(99, eventTitle, eventType, ticketed);
+        existingEvent.setOrganizer(provider);
+
+        Performance existingPerformance = existingEvent.createPerformance(
+                performanceId,
+                start,
+                end,
+                List.of("existing performer"),
+                "existing venue",
+                100,
+                false,
+                false,
+                ticketed ? 50 : 0,
+                ticketed ? 10.0 : 0.0
+        );
+
+        provider.addEvent(existingEvent);
+        controller.addEvent(existingEvent);
+        controller.addPerformance(existingPerformance);
+    }
+
     /*
       Main success case for a ticketed event.
       It should create the event, create one performance, and attach the event to the provider.
@@ -78,6 +108,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "music",
                 "yes",
+                "1",
                 "2030-05-01 19:00",
                 "2030-05-01 21:00",
                 "p1, p2",
@@ -111,7 +142,7 @@ public class CreateEventSystemTests {
         Performance createdPerformance = createdEvent.getPerformances().get(0);
         assertAll(
                 () -> assertEquals(1L, createdPerformance.getPerformanceId(),
-                        "The first created performance should have ID 1 in a fresh controller."),
+                        "The created performance should keep the entered performance ID."),
                 () -> assertEquals(LocalDateTime.of(2030, 5, 1, 19, 0), createdPerformance.getStartDateTime(),
                         "Start date and time should match the entered value."),
                 () -> assertEquals(LocalDateTime.of(2030, 5, 1, 21, 0), createdPerformance.getEndDateTime(),
@@ -142,6 +173,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "theatre",
                 "no",
+                "1",
                 "2030-06-01 18:30",
                 "2030-06-01 20:00",
                 "",
@@ -160,6 +192,8 @@ public class CreateEventSystemTests {
         assertAll(
                 () -> assertFalse(createdEvent.isTicketed(),
                         "The created event should be non-ticketed when the provider answered no."),
+                () -> assertEquals(1L, performance.getPerformanceId(),
+                        "The created performance should keep the entered performance ID."),
                 () -> assertEquals(0, performance.getTicketsLeft(),
                         "A non-ticketed performance should keep zero tickets in the current implementation."),
                 () -> assertEquals(0.0, performance.getTicketPrice(), 0.0001,
@@ -221,21 +255,98 @@ public class CreateEventSystemTests {
     }
 
     /*
-      A provider should not create two events with the same title.
+      Same title should still be allowed when the existing event has no overlapping performance time.
      */
     @Test
-    void shouldRejectDuplicateEventTitleForSameProvider() {
-        provider.addEvent(new Event(99, "event1", EventType.Movie, true));
-        stubInputs("event1");
+    void shouldAllowSameTitleWhenTimesDoNotOverlap() {
+        addExistingEventForProvider(
+                "event1",
+                EventType.Movie,
+                true,
+                99L,
+                LocalDateTime.of(2030, 5, 1, 10, 0),
+                LocalDateTime.of(2030, 5, 1, 12, 0)
+        );
+
+        stubInputs(
+                "event1",
+                "music",
+                "yes",
+                "1",
+                "2030-05-01 13:00",
+                "2030-05-01 15:00",
+                "p1",
+                "venue1",
+                "100",
+                "no",
+                "no",
+                "50",
+                "10",
+                "no"
+        );
 
         Event createdEvent = controller.createEvent();
 
         assertAll(
-                () -> assertNull(createdEvent, "The duplicate event should not be created."),
-                () -> assertEquals(1, provider.getEvents().size(),
-                        "The provider should still have only the original event."),
-                () -> assertEquals("You already have an event with this title.", capturedErrorMessages().get(0),
-                        "The duplicate-title message should explain the failure clearly.")
+                () -> assertNotNull(createdEvent,
+                        "A same-title event should still be created when the times do not overlap."),
+                () -> assertEquals(2, provider.getEvents().size(),
+                        "The provider should now own both the old event and the new same-title event."),
+                () -> assertEquals("event1", createdEvent.getEventTitle(),
+                        "The newly created event should still keep the requested title."),
+                () -> assertFalse(capturedErrorMessages()
+                                .contains("An event with this title already exists for overlapping dates/times."),
+                        "No overlap-specific title error should be shown when the times do not overlap.")
+        );
+    }
+
+    /*
+      Same title should be rejected when the existing event already has an overlapping performance time.
+     */
+    @Test
+    void shouldRejectSameTitleWhenTimesOverlap() {
+        addExistingEventForProvider(
+                "event1",
+                EventType.Movie,
+                true,
+                99L,
+                LocalDateTime.of(2030, 5, 1, 10, 0),
+                LocalDateTime.of(2030, 5, 1, 12, 0)
+        );
+
+        stubInputs(
+                "event1",
+                "music",
+                "yes",
+                "1",
+                "2030-05-01 11:00",
+                "2030-05-01 13:00",
+                "yes",
+                "2",
+                "2030-05-01 13:30",
+                "2030-05-01 15:00",
+                "p1",
+                "venue1",
+                "100",
+                "no",
+                "no",
+                "50",
+                "10",
+                "no"
+        );
+
+        Event createdEvent = controller.createEvent();
+
+        assertAll(
+                () -> assertNotNull(createdEvent,
+                        "The event should still be created after the provider fixes the overlapping time."),
+                () -> assertContains(capturedErrorMessages(),
+                        "An event with this title already exists for overlapping dates/times."),
+                () -> assertEquals(LocalDateTime.of(2030, 5, 1, 13, 30),
+                        createdEvent.getPerformances().get(0).getStartDateTime(),
+                        "The saved performance should use the corrected non-overlapping time."),
+                () -> assertEquals(2, provider.getEvents().size(),
+                        "The provider should still end up with the existing event and the corrected new event.")
         );
     }
 
@@ -250,6 +361,7 @@ public class CreateEventSystemTests {
                 "opera",
                 "music",
                 "yes",
+                "1",
                 "2030-07-01 18:00",
                 "2030-07-01 20:00",
                 "p1",
@@ -284,6 +396,7 @@ public class CreateEventSystemTests {
                 "dance",
                 "maybe",
                 "yes",
+                "1",
                 "2030-08-01 18:00",
                 "2030-08-01 21:00",
                 "p1",
@@ -316,6 +429,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "movie",
                 "yes",
+                "1",
                 "01/08/2030 18:00",
                 "2030-08-01 18:00",
                 "2030-08-01 20:00",
@@ -343,8 +457,7 @@ public class CreateEventSystemTests {
 
     /*
       If the first performance is invalid because the end is before the start,
-      the current implementation ends the use case with no event created.
-      This test documents that current system behaviour clearly.
+      and the provider then chooses not to try again, no event should be created.
      */
     @Test
     void shouldAbortEventCreationWhenFirstPerformanceEndIsNotAfterStart() {
@@ -352,8 +465,10 @@ public class CreateEventSystemTests {
                 "event1",
                 "games",
                 "yes",
+                "1",
                 "2030-09-01 20:00",
-                "2030-09-01 18:00"
+                "2030-09-01 18:00",
+                "no"
         );
 
         Event createdEvent = controller.createEvent();
@@ -378,6 +493,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "music",
                 "yes",
+                "1",
                 "2030-10-01 18:00",
                 "2030-10-01 20:00",
                 "p1",
@@ -412,6 +528,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "sports",
                 "yes",
+                "1",
                 "2030-11-01 18:00",
                 "2030-11-01 20:00",
                 "p1",
@@ -429,9 +546,9 @@ public class CreateEventSystemTests {
         );
 
         Event createdEvent = controller.createEvent();
-        Performance performance = createdEvent.getPerformances().get(0);
-
         assertNotNull(createdEvent, "The event should be created after the ticket input is corrected.");
+
+        Performance performance = createdEvent.getPerformances().get(0);
         assertAll(
                 () -> assertEquals(200, performance.getTicketsLeft(),
                         "The saved ticket count should be the final valid number."),
@@ -454,6 +571,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "music",
                 "yes",
+                "1",
                 "2030-12-01 10:00",
                 "2030-12-01 12:00",
                 "p1",
@@ -464,6 +582,7 @@ public class CreateEventSystemTests {
                 "50",
                 "10",
                 "yes",
+                "2",
                 "2030-12-01 13:00",
                 "2030-12-01 15:00",
                 "p2",
@@ -482,6 +601,10 @@ public class CreateEventSystemTests {
         assertAll(
                 () -> assertEquals(2, createdEvent.getPerformances().size(),
                         "Two valid performances should be attached to the same event."),
+                () -> assertEquals(1L, createdEvent.getPerformances().get(0).getPerformanceId(),
+                        "The first performance should keep the first entered ID."),
+                () -> assertEquals(2L, createdEvent.getPerformances().get(1).getPerformanceId(),
+                        "The second performance should keep the second entered ID."),
                 () -> assertEquals(2, capturedSuccessMessages().stream()
                                 .filter(m -> m.startsWith("Performance created successfully with ID ")).count(),
                         "The system should confirm each created performance separately."),
@@ -499,6 +622,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "music",
                 "yes",
+                "1",
                 "2031-01-01 10:00",
                 "2031-01-01 12:00",
                 "p1",
@@ -509,8 +633,11 @@ public class CreateEventSystemTests {
                 "50",
                 "10",
                 "yes",
+                "2",
                 "2031-01-01 11:00",
                 "2031-01-01 13:00",
+                "yes",
+                "3",
                 "2031-01-01 13:30",
                 "2031-01-01 15:00",
                 "p2",
@@ -530,6 +657,10 @@ public class CreateEventSystemTests {
                 () -> assertEquals(2, createdEvent.getPerformances().size(),
                         "The event should finally contain the first valid and the corrected second performance."),
                 () -> assertContains(capturedErrorMessages(), "This event already has a performance at overlapping times."),
+                () -> assertEquals(1L, createdEvent.getPerformances().get(0).getPerformanceId(),
+                        "The first saved performance should keep the first entered ID."),
+                () -> assertEquals(3L, createdEvent.getPerformances().get(1).getPerformanceId(),
+                        "The corrected second performance should use the later replacement ID."),
                 () -> assertEquals(LocalDateTime.of(2031, 1, 1, 13, 30),
                         createdEvent.getPerformances().get(1).getStartDateTime(),
                         "The second saved performance should use the corrected non-overlapping time.")
@@ -546,6 +677,7 @@ public class CreateEventSystemTests {
                 "event1",
                 "dance",
                 "no",
+                "1",
                 "2031-02-01 19:00",
                 "2031-02-01 20:00",
                 "p1",

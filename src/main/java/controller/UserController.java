@@ -272,13 +272,20 @@ public class UserController extends Controller {
                     view.displayError("Invalid line in preregistered users file: " + userInfos);
                     continue;
                 }
-                String email = userInfoArray[0].trim();
-                String password = userInfoArray[1].trim();
-                String name = userInfoArray[2].trim();
-                int phoneNumber = Integer.parseInt(userInfoArray[3].trim());
 
-                Student student = new Student(email, password, name, phoneNumber);
-                addUser(student);
+                try {
+                    String email = userInfoArray[0].trim();
+                    String password = userInfoArray[1].trim();
+                    String name = userInfoArray[2].trim();
+                    int phoneNumber = Integer.parseInt(userInfoArray[3].trim());
+
+                    Student student = new Student(email, password, name, phoneNumber);
+                    addUser(student);
+                } catch (NumberFormatException e) {
+                    view.displayError("Invalid phone number in preregistered users file: " + userInfos);
+                } catch (IllegalArgumentException e) {
+                    view.displayError("Invalid preregistered user data: " + userInfos);
+                }
             }
             scanner.close();
         }
@@ -296,12 +303,19 @@ public class UserController extends Controller {
                     view.displayError("Invalid line in preregistered admin file: " + userInfos);
                     continue;
                 }
-                String email = userInfoArray[0].trim();
-                String password = userInfoArray[1].trim();
-                String name = userInfoArray[2].trim();
 
-                AdminStaff adminStaff = new AdminStaff(email, password, name);
-                addUser(adminStaff);
+                try {
+                    String email = userInfoArray[0].trim();
+                    String password = userInfoArray[1].trim();
+                    String name = userInfoArray[2].trim();
+
+                    AdminStaff adminStaff = new AdminStaff(email, password, name);
+                    addUser(adminStaff);
+                } catch (NumberFormatException e) {
+                    view.displayError("Invalid phone number in preregistered users file: " + userInfos);
+                } catch (IllegalArgumentException e) {
+                    view.displayError("Invalid preregistered user data: " + userInfos);
+                }
             }
             scanner.close();
         }

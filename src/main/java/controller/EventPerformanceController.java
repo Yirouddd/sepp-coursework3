@@ -65,83 +65,75 @@ public class EventPerformanceController extends Controller {
             return null;
         }
 
-        for (Event existing : provider.getEvents()) {
-            if (existing.getEventTitle().equalsIgnoreCase(eventTitle)) {
-                view.displayError("You already have an event with this title.");
-                return null;
-            }
-        }
-
         EventType eventType = promptEventType();
-        if (eventType == null) {
-            return null;
-        }
-
         boolean isTicketed = promptYesNo("Is the event ticketed? (yes/no): ");
 
         Event event = new Event(nextEventID++, eventTitle, eventType, isTicketed);
         event.setOrganizer(provider);
 
-        boolean addAnother = false;
         int performanceCount = 0;
 
-        do {
+        while (true) {
             try {
-                LocalDateTime startDateTime = promptDateTime("Enter performance start date/time (yyyy-MM-dd HH:mm): ");
-                LocalDateTime endDateTime = promptDateTime("Enter performance end date/time (yyyy-MM-dd HH:mm): ");
+                long performanceId = promptUniquePerformanceId();
+
+                LocalDateTime startDateTime =
+                        promptDateTime("Enter performance start date/time (yyyy-MM-dd HH:mm): ");
+                LocalDateTime endDateTime =
+                        promptDateTime("Enter performance end date/time (yyyy-MM-dd HH:mm): ");
 
                 if (!endDateTime.isAfter(startDateTime)) {
                     view.displayError("End date/time must be after start date/time.");
-                    continue;
-                }
-
-                if (event.hasPerformanceAtSameTimes(startDateTime, endDateTime)) {
+                } else if (event.hasPerformanceAtSameTimes(startDateTime, endDateTime)) {
                     view.displayError("This event already has a performance at overlapping times.");
-                    continue;
+                } else if (providerHasSameTitleAndOverlappingTimes(provider, eventTitle, startDateTime, endDateTime)) {
+                    view.displayError("An event with this title already exists for overlapping dates/times.");
+                } else {
+                    Collection<String> performerNames = promptPerformerNames();
+
+                    String venueAddress = view.getInput("Enter venue address: ").trim();
+                    if (venueAddress.isEmpty()) {
+                        view.displayError("Venue address cannot be empty.");
+                    } else {
+                        int venueCapacity = promptPositiveInt("Enter venue capacity: ");
+                        boolean venueIsOutdoors = promptYesNo("Is the venue outdoors? (yes/no): ");
+                        boolean venueIsSmoking = promptYesNo("Is smoking allowed? (yes/no): ");
+
+                        int numTicketsTotal = 0;
+                        double ticketPrice = 0.0;
+
+                        if (isTicketed) {
+                            numTicketsTotal = promptPositiveInt("Enter number of tickets available: ");
+                            ticketPrice = promptNonNegativeDouble("Enter ticket price: ");
+                        }
+
+                        Performance performance = event.createPerformance(
+                                performanceId,
+                                startDateTime,
+                                endDateTime,
+                                performerNames,
+                                venueAddress,
+                                venueCapacity,
+                                venueIsOutdoors,
+                                venueIsSmoking,
+                                numTicketsTotal,
+                                ticketPrice
+                        );
+
+                        addPerformance(performance);
+                        performanceCount++;
+                        view.displaySuccess("Performance created successfully with ID " + performance.getPerformanceId());
+                    }
                 }
-
-                Collection<String> performerNames = promptPerformerNames();
-
-                String venueAddress = view.getInput("Enter venue address: ").trim();
-                if (venueAddress.isEmpty()) {
-                    view.displayError("Venue address cannot be empty.");
-                    continue;
-                }
-
-                int venueCapacity = promptPositiveInt("Enter venue capacity: ");
-                boolean venueIsOutdoors = promptYesNo("Is the venue outdoors? (yes/no): ");
-                boolean venueIsSmoking = promptYesNo("Is smoking allowed? (yes/no): ");
-
-                int numTicketsTotal = 0;
-                double ticketPrice = 0.0;
-
-                if (isTicketed) {
-                    numTicketsTotal = promptPositiveInt("Enter number of tickets available: ");
-                    ticketPrice = promptNonNegativeDouble("Enter ticket price: ");
-                }
-
-                Performance performance = event.createPerformance(
-                        nextPerformanceID++,
-                        startDateTime,
-                        endDateTime,
-                        performerNames,
-                        venueAddress,
-                        venueCapacity,
-                        venueIsOutdoors,
-                        venueIsSmoking,
-                        numTicketsTotal,
-                        ticketPrice
-                );
-
-                addPerformance(performance);
-                performanceCount++;
-                view.displaySuccess("Performance created successfully with ID " + performance.getPerformanceId());
             } catch (IllegalArgumentException e) {
                 view.displayError(e.getMessage());
             }
 
-            addAnother = promptYesNo("Add another performance to this event? (yes/no): ");
-        } while (addAnother);
+            boolean addAnother = promptYesNo("Add another performance to this event? (yes/no): ");
+            if (!addAnother) {
+                break;
+            }
+        }
 
         if (performanceCount == 0) {
             view.displayError("At least one valid performance must be created.");
@@ -151,7 +143,6 @@ public class EventPerformanceController extends Controller {
         addEvent(event);
         provider.addEvent(event);
         view.displaySuccess("Event created successfully with ID " + event.getEventID());
-
         return event;
     }
 
@@ -561,6 +552,12 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Retrieves an event by its unique identifier.
+     *
+     * @param eventID the unique identifier of the event to retrieve
+     * @return the Event object if found, or null if no event with the given ID exists
+     */
     private Event getEventByID(long eventID) {
         for (Event e : events) {
             if (e.getEventID() == eventID) {
@@ -570,15 +567,69 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
-    private Event getEventByTitle(String title) {
-        for (Event e : events) {
-            if (e.getEventTitle() == title) {
-                return e;
+    /**
+     * Prompts the user to enter a unique performance ID.
+     * Continues prompting until a valid, positive, and unique ID is provided.
+     *
+     * @return a unique positive performance ID that does not already exist in the system
+     */
+    private long promptUniquePerformanceId() {
+        while (true) {
+            try {
+                long id = Long.parseLong(view.getInput("Enter performance ID: ").trim());
+
+                if (id <= 0) {
+                    view.displayError("Performance ID must be positive.");
+                    continue;
+                }
+
+                if (getPerformanceByID(id) != null) {
+                    view.displayError("A performance with this ID already exists.");
+                    continue;
+                }
+
+                return id;
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid numeric performance ID.");
             }
         }
-        return null;
     }
 
+    /**
+     * Checks whether a provider already has an event with the same title and
+     * a performance that overlaps with the given time range.
+     *
+     * @param provider      the entertainment provider to check
+     * @param eventTitle    the title of the event to compare
+     * @param startDateTime the start time of the new performance
+     * @param endDateTime   the end time of the new performance
+     * @return true if the provider has an event with the same title and an overlapping performance,
+     *         false otherwise
+     */
+    private boolean providerHasSameTitleAndOverlappingTimes(
+            EntertainmentProvider provider,
+            String eventTitle,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime
+    ) {
+        for (Event existing : provider.getEvents()) {
+            if (!existing.getEventTitle().equalsIgnoreCase(eventTitle)) {
+                continue;
+            }
+
+            if (existing.hasPerformanceAtSameTimes(startDateTime, endDateTime)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves a performance by its unique identifier.
+     *
+     * @param performanceID the unique identifier of the performance to retrieve
+     * @return the Performance object if found, or null if no performance with the given ID exists
+     */
     Performance getPerformanceByID(long performanceID) {
         for (Performance p : performances) {
             if (p.getPerformanceId() == performanceID) {
@@ -588,6 +639,13 @@ public class EventPerformanceController extends Controller {
         return null;
     }
 
+    /**
+     * Prompts the user to select an event type from a predefined list.
+     * Continues prompting until a valid event type is entered.
+     * Accepts both singular and plural forms for sports and games.
+     *
+     * @return the selected EventType enum value
+     */
     private EventType promptEventType() {
         while (true) {
             String raw = view.getInput("Enter event type (music, theatre, dance, movie, sports, games): ").trim().toLowerCase();
@@ -613,6 +671,13 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Prompts the user to enter a date and time in a specific format.
+     * Continues prompting until a correctly formatted date/time is provided.
+     *
+     * @param prompt the message to display to the user when requesting input
+     * @return a LocalDateTime object parsed from the user's input
+     */
     private LocalDateTime promptDateTime(String prompt) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -626,6 +691,12 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Prompts the user to enter a comma-separated list of performer names.
+     * If the input is empty, returns an empty collection.
+     *
+     * @return a Collection of trimmed performer names, or an empty list if none provided
+     */
     private Collection<String> promptPerformerNames() {
         String input = view.getInput("Enter performer names separated by commas (or leave blank): ").trim();
         List<String> names = new ArrayList<>();
@@ -645,6 +716,13 @@ public class EventPerformanceController extends Controller {
         return names;
     }
 
+    /**
+     * Prompts the user to enter a positive integer value.
+     * Continues prompting until a valid positive integer is provided.
+     *
+     * @param prompt the message to display to the user when requesting input
+     * @return a positive integer value entered by the user
+     */
     private int promptPositiveInt(String prompt) {
         while (true) {
             try {
@@ -660,6 +738,13 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Prompts the user to enter a non-negative double value.
+     * Continues prompting until a valid non-negative number is provided.
+     *
+     * @param prompt the message to display to the user when requesting input
+     * @return a non-negative double value entered by the user
+     */
     private double promptNonNegativeDouble(String prompt) {
         while (true) {
             try {
@@ -675,6 +760,14 @@ public class EventPerformanceController extends Controller {
         }
     }
 
+    /**
+     * Prompts the user to answer a yes/no question.
+     * Accepts "yes"/"y" for true and "no"/"n" for false.
+     * Continues prompting until a valid response is provided.
+     *
+     * @param prompt the message to display to the user when requesting input
+     * @return true if the user answers "yes" or "y", false if "no" or "n"
+     */
     private boolean promptYesNo(String prompt) {
         while (true) {
             String raw = view.getInput(prompt).trim().toLowerCase();

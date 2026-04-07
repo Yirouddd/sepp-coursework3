@@ -121,6 +121,9 @@ public class MenuController extends Controller {
         }
 
         int choice = selectFromMenu(options);
+        if (choice == -1) {
+            return false;
+        }
 
         switch (GuestMenuOptions.values()[choice]) {
             case LOGIN:
@@ -148,6 +151,9 @@ public class MenuController extends Controller {
         }
 
         int choice = selectFromMenu(options);
+        if (choice == -1) {
+            return false;
+        }
 
         switch (StudentMenuOptions.values()[choice]) {
             case LOGOUT:
@@ -190,6 +196,9 @@ public class MenuController extends Controller {
         }
 
         int choice = selectFromMenu(options);
+        if (choice == -1) {
+            return false;
+        }
 
         switch (EPMenuOptions.values()[choice]) {
             case LOGOUT:
@@ -226,6 +235,9 @@ public class MenuController extends Controller {
         }
 
         int choice = selectFromMenu(options);
+        if (choice == -1) {
+            return false;
+        }
 
         switch (AdminMenuOptions.values()[choice]) {
             case LOGOUT:

@@ -34,6 +34,7 @@ public class Booking {
         this.numTickets = numTickets;
         this.amountPaid = amountPaid;
         this.bookingNumber = bookingNumber;
+        this.bookingDateTime = bookingDateTime;
         status = BookingStatus.ACTIVE;
     }
 

@@ -85,8 +85,8 @@ public class PerformanceTest {
 
     // Performance status
 
-    /**
-     * Test that cancelling a performance sets status to cancelling.
+    /*
+      Test that cancelling a performance sets status to cancelling.
      */
     @Test
     void cancelSetsStatusToCancelled() {
@@ -95,8 +95,8 @@ public class PerformanceTest {
         assertEquals(PerformanceStatus.ACTIVE, ticketedPerformance2.getStatus());
     }
 
-    /**
-     * Test that cancelling twice keeps status CANCELLED.
+    /*
+      Test that cancelling twice keeps status CANCELLED.
      */
     @Test
     void cancelTwiceDoesNotChangePerformanceStatus() {
@@ -107,8 +107,8 @@ public class PerformanceTest {
 
     // Ticketed / Non-ticketed event
 
-    /**
-     * Test that ticketed performance is identified appropriately.
+    /*
+      Test that ticketed performance is identified appropriately.
      */
     @Test
     void checkIfEventIsTicketed_True() {
@@ -116,8 +116,8 @@ public class PerformanceTest {
         assertTrue(ticketedPerformance2.checkIfEventIsTicketed());
     }
 
-    /**
-     * Test that non-ticketed performance is identified appropriately.
+    /*
+      Test that non-ticketed performance is identified appropriately.
      */
     @Test
     void checkIfEventIsTicketed_False() {
@@ -126,25 +126,25 @@ public class PerformanceTest {
 
     // Enough tickets
 
-    /**
-     * Test tickets left logic for sufficient tickets quantity.
+    /*
+      Test tickets left logic for sufficient tickets quantity.
      */
     @Test
     void checkIfTicketsLeft_true() {
         assertTrue(ticketedPerformance.checkIfTicketsLeft(10));
     }
 
-    /**
-     * Test tickets left logic when tickets quantity requested exceeds
-     * available.
+    /*
+      Test tickets left logic when tickets quantity requested exceeds
+      available.
      */
     @Test
     void checkIfTicketsLeft_false_ticketsExceed() {
         assertFalse(ticketedPerformance.checkIfTicketsLeft(100));
     }
 
-    /**
-     * Test tickets left logic at boundaries.
+    /*
+      Test tickets left logic at boundaries.
      */
     @Test
     void checkIfTicketsLeft_false_boundaries() {
@@ -155,9 +155,9 @@ public class PerformanceTest {
 
     // Final ticket price
 
-    /**
-     * Test that final ticket price is returned correctly when no sponsorship
-     * was applied.
+    /*
+      Test that final ticket price is returned correctly when no sponsorship
+      was applied.
      */
     @Test
     void getFinalTicketPrice_noSponsorship() {
@@ -166,9 +166,9 @@ public class PerformanceTest {
         assertEquals(0.0, nonTicketedPerformance.getFinalTicketPrice());
     }
 
-    /**
-     * Test that final ticket price is returned correctly when a sponsorship
-     * was applied to one performance.
+    /*
+      Test that final ticket price is returned correctly when a sponsorship
+      was applied to one performance.
      */
     @Test
     void getFinalTicketPrice_withSponsorship() {
@@ -179,9 +179,9 @@ public class PerformanceTest {
         assertEquals(20.0, ticketedPerformance2.getFinalTicketPrice());
     }
 
-    /**
-     * Test that final ticket price is returned correctly when sponsorship
-     * failed due to exceeding amount.
+    /*
+      Test that final ticket price is returned correctly when sponsorship
+      failed due to exceeding amount.
      */
     @Test
     void getFinalTicketPrice_failedSponsoredNegativeFinal() {
@@ -191,24 +191,24 @@ public class PerformanceTest {
 
     // Performance's times
 
-    /**
-     * Test that performance identifies future timing correctly.
+    /*
+      Test that performance identifies future timing correctly.
      */
     @Test
     void checkHasNotHappenedYet_true() {
         assertTrue(ticketedPerformance.checkHasNotHappenedYet());
     }
 
-    /**
-     * Test that performance identifies past timing correctly.
+    /*
+      Test that performance identifies past timing correctly.
      */
     @Test
     void checkHasNotHappenedYet_pastPerformanceReturnsFalse() {
         assertFalse(nonTicketedPerformance.checkHasNotHappenedYet());
     }
 
-    /**
-     * Test that performance identifies almost current timing correctly.
+    /*
+      Test that performance identifies almost current timing correctly.
      */
     @Test
     void checkHasNotHappenedYet_currentTimeReturnsFalse() {
@@ -221,9 +221,8 @@ public class PerformanceTest {
 
     // Created by EP
 
-    /**
-     * Test that the method for checking whether the performance is created
-     * by EP.
+    /*
+      Test that the method for checking whether the performance is created by EP.
      */
     @Test
     void checkCreatedByEP_returnTrue() {
@@ -234,8 +233,8 @@ public class PerformanceTest {
 
     // Sponsorship
 
-    /**
-     * Test sponsorship throws exception for non-ticketed performance.
+    /*
+      Test sponsorship throws exception for non-ticketed performance.
      */
     @Test
     void sponsor_nonTicketedThrows() {
@@ -245,8 +244,8 @@ public class PerformanceTest {
                 "performances.", e.getMessage());
     }
 
-    /**
-     * Test sponsorship throws exception for negative sponsorship amount.
+    /*
+      Test sponsorship throws exception for negative sponsorship amount.
      */
     @Test
     void sponsor_negativeAmountThrows() {
@@ -255,9 +254,9 @@ public class PerformanceTest {
         assertEquals("Sponsorship must be positive.", e.getMessage());
     }
 
-    /**
-     * Test sponsorship exceeding ticket price sets the final ticket price to
-     * zero but does not go negative.
+    /*
+      Test sponsorship exceeding ticket price sets the final ticket price to
+      zero but does not go negative.
      */
     @Test
     void sponsor_amountExceedsTicketPrice_shouldBeZero() {
@@ -265,8 +264,8 @@ public class PerformanceTest {
         assertEquals(0.0, ticketedPerformance.getFinalTicketPrice());
     }
 
-    /**
-     * Test that multiple sponsorships apply correctly.
+    /*
+      Test that multiple sponsorships apply correctly.
      */
     @Test
     void multipleSponsorshipsDoneCorrectly() {
@@ -276,8 +275,8 @@ public class PerformanceTest {
         assertEquals(6.0, ticketedPerformance.getFinalTicketPrice());
     }
 
-    /**
-     * Test fractional sponsorship is rounded correctly.
+    /*
+      Test fractional sponsorship is rounded correctly.
      */
     @Test
     void sponsorshipRoundsCorrectly() {
@@ -287,8 +286,8 @@ public class PerformanceTest {
         assertEquals(10.5, ticketedPerformance.getFinalTicketPrice(), 0.01);
     }
 
-    /**
-     * Test sponsorship reduces ticket price accordingly.
+    /*
+      Test sponsorship reduces ticket price accordingly.
      */
     @Test
     void sponsorshipReducesTicketPriceCorrectly() {
@@ -299,8 +298,8 @@ public class PerformanceTest {
 
     // Reviews
 
-    /**
-     * Test that invalid rating throws exception.
+    /*
+      Test that invalid rating throws exception.
      */
     @Test
     void review_invalidRatingThrows() {
@@ -310,8 +309,8 @@ public class PerformanceTest {
                 () -> ticketedPerformance.review(6, "Awesome, loved it"));
     }
 
-    /**
-     * Test that null comment (empty) defaults to empty string.
+    /*
+      Test that null comment (empty) defaults to empty string.
      */
     @Test
     void review_nullCommentDefaultEmpty() {
@@ -320,8 +319,8 @@ public class PerformanceTest {
                 ticketedPerformance.getReviewsComments().iterator().next());
     }
 
-    /**
-     * Test valid reviews adds rating and comment.
+    /*
+      Test valid reviews adds rating and comment.
      */
     @Test
     void review_validInputAddsRatingAndComment() {
@@ -338,8 +337,8 @@ public class PerformanceTest {
         assertEquals(4.0, ticketedPerformance.getAverageRating());
     }
 
-    /**
-     * Test that multiple reviews calculate average correctly.
+    /*
+      Test that multiple reviews calculate average correctly.
      */
     @Test
     void review_multipleReviews_calculateAverageCorrectly() {
@@ -351,8 +350,8 @@ public class PerformanceTest {
 
     // Bookings
 
-    /**
-     * Test adding null booking throws an exception.
+    /*
+      Test adding null booking throws an exception.
      */
     @Test
     void addBooking_nullThrows() {
@@ -361,9 +360,9 @@ public class PerformanceTest {
         assertEquals("Booking cannot be null.", e.getMessage());
     }
 
-    /**
-     * Test adding booking to non-ticketed performance throws an exception
-     * and displays an appropriate message.
+    /*
+      Test adding booking to non-ticketed performance throws an exception
+      and displays an appropriate message.
      */
     @Test
     void addBooking_bookNonTicketedThrows() {
@@ -374,10 +373,10 @@ public class PerformanceTest {
         assertEquals("Cannot book a non-ticketed performance.", e.getMessage());
     }
 
-    /**
-     * Test that adding booking with not enough tickets left throws an
-     * exception and displays an appropriate message saying that not enough
-     * tickets left.
+    /*
+      Test that adding booking with not enough tickets left throws an
+      exception and displays an appropriate message saying that not enough
+      tickets left.
      */
     @Test
     void addBooking_notEnoughTicketsThrows() {
@@ -389,9 +388,9 @@ public class PerformanceTest {
         assertEquals("Not enough tickets left.", e.getMessage());
     }
 
-    /**
-     * Test that multiple bookings reduce tickets correctly and changes state
-     * to has active bookings.
+    /*
+      Test that multiple bookings reduce tickets correctly and changes state
+      to has active bookings.
      */
     @Test
     void addBooking_reducesTicketsLeftAndAddsActiveBookings() {
@@ -403,8 +402,8 @@ public class PerformanceTest {
         assertTrue(ticketedPerformance.hasActiveBooking());
     }
 
-    /**
-     * Test that multiple bookings reduce tickets correctly.
+    /*
+      Test that multiple bookings reduce tickets correctly.
      */
     @Test
     void addBooking_multipleBookingsReducesTickets() {
@@ -419,9 +418,9 @@ public class PerformanceTest {
         assertEquals(44, ticketedPerformance.getTicketsLeft());
     }
 
-    /**
-     * Test that remove booking increases number of tickets left and changes
-     * active status to false.
+    /*
+      Test that remove booking increases number of tickets left and changes
+      active status to false.
      */
     @Test
     void removeBooking_increasesTicketsLeft() {

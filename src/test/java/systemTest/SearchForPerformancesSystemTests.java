@@ -39,10 +39,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * System tests for search for performances use case.
- *
- * The comments here are kept simple on purpose.
+/*
+  System tests for search for performances use case.
  */
 public class SearchForPerformancesSystemTests {
 
@@ -93,16 +91,16 @@ public class SearchForPerformancesSystemTests {
         eventPerformanceController = new EventPerformanceController(mockView, paymentSystem);
     }
 
-    /**
-     * Small helper to feed many keyboard inputs.
+    /*
+      Small helper to feed many keyboard inputs.
      */
     private void stubInputs(String... inputs) {
         when(mockView.getInput(anyString()))
                 .thenReturn(inputs[0], Arrays.copyOfRange(inputs, 1, inputs.length));
     }
 
-    /**
-     * This is only for setup, so test can focus on search use case.
+    /*
+      This is only for setup, so test can focus on search use case.
      */
     private EntertainmentProvider addProviderDirectly(String email, String orgName, String businessNumber) {
         EntertainmentProvider provider = new EntertainmentProvider(
@@ -117,8 +115,8 @@ public class SearchForPerformancesSystemTests {
         return provider;
     }
 
-    /**
-     * We use create event use case to make performances for search tests.
+    /*
+      We use create event use case to make performances for search tests.
      */
     private Event createTicketedEventThroughUseCase(
             EntertainmentProvider provider,
@@ -151,8 +149,8 @@ public class SearchForPerformancesSystemTests {
         return event;
     }
 
-    /**
-     * This helper is for non-ticketed event setup.
+    /*
+      This helper is for non-ticketed event setup.
      */
     private Event createNonTicketedEventThroughUseCase(
             EntertainmentProvider provider,

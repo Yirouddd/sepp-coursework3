@@ -9,10 +9,9 @@ import interfaces.View;
 import object.Event;
 import object.Performance;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import user.EntertainmentProvider;
 import user.Student;
-
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -20,32 +19,24 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * System tests for the view performance use case.
- * <p>
- * Uses a mock view implementation to simulate user input and obtain output.
- */
-
 public class ViewPerformanceSystemTest {
 
     private EventPerformanceController controller;
     private MockView mockView;
     private PaymentSystem paymentSystem;
 
+    // Fake view used to simulate user input and capture output.
     private static class MockView implements View {
         private final Queue<String> inputs = new ArrayDeque<>();
         private final List<String> performanceOutputs = new ArrayList<>();
         private final List<String> successMessages = new ArrayList<>();
         private final List<String> errorMessages = new ArrayList<>();
 
-        MockView(String... input){
+        MockView(String... input) {
             this.inputs.addAll(Arrays.asList(input));
         }
 
-        /**
-         * Returns empty string when no input is available to simulate
-         * pressing enter by user.
-         */
+        // Return empty string when no input is left, similar to pressing enter.
         @Override
         public String getInput(String inputPrompt) {
             if (inputs.isEmpty()) {
@@ -66,7 +57,6 @@ public class ViewPerformanceSystemTest {
 
         @Override
         public void displayListOfPerformances(Collection<String> listOfPerformanceInfo) {
-
         }
 
         @Override
@@ -76,7 +66,6 @@ public class ViewPerformanceSystemTest {
 
         @Override
         public void displayBookingRecord(String bookingRecord) {
-
         }
     }
 
@@ -94,32 +83,49 @@ public class ViewPerformanceSystemTest {
     }
 
     private Event setupEventAndPerformance() {
-        EntertainmentProvider ep = new EntertainmentProvider("ep@ed.ac.uk",
-                "passwordEP", "OrgName", "BN001", "Alice EP", "description");
+        EntertainmentProvider ep = new EntertainmentProvider(
+                "ep@ed.ac.uk",
+                "passwordEP",
+                "OrgName",
+                "BN001",
+                "Alice EP",
+                "description"
+        );
+
         Event event = new Event(1L, "Concert", EventType.Music, true);
         event.setOrganizer(ep);
 
-        Performance p1 = event.createPerformance(1L,
-                LocalDateTime.of(2026, 4, 10, 19, 0),
-                LocalDateTime.of(2026, 4, 10, 21, 0),
+        LocalDateTime start1 = LocalDateTime.now().plusDays(5).withHour(19).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end1 = start1.plusHours(2);
+
+        LocalDateTime start2 = LocalDateTime.now().plusDays(6).withHour(19).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end2 = start2.plusHours(3);
+
+        Performance p1 = event.createPerformance(
+                1L,
+                start1,
+                end1,
                 List.of("Band A"),
                 "Main Hall",
                 100,
                 false,
                 false,
                 50,
-                15.0);
+                15.0
+        );
 
-        Performance p2 = event.createPerformance(2L,
-                LocalDateTime.of(2026, 4, 10, 19, 0),
-                LocalDateTime.of(2026, 4, 10, 22, 0),
+        Performance p2 = event.createPerformance(
+                2L,
+                start2,
+                end2,
                 List.of("Band B"),
                 "Main Hall",
                 100,
                 false,
                 false,
                 50,
-                25.0);
+                25.0
+        );
 
         p1.review(5, "Amazing");
         p2.review(4, "Coool");
@@ -131,221 +137,298 @@ public class ViewPerformanceSystemTest {
         return event;
     }
 
-    /**
-     * Verifies that an appropriate error message is displayed when no
-     * performances exist.
-     */
+    // When there are no performances at all, the use case should stop with an error.
     @Test
     void noPerformancesShouldShowError() {
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("No performances " +
-                "available."));
+        assertTrue(
+                mockView.errorMessages.contains("No performances available."),
+                "The system should show an error when no performances exist."
+        );
     }
 
-    /**
-     * Tests invalid input handling of non-numeric (string) performance ID
-     * input.
-     * Verifies that a non-numeric input triggers a display of an error
-     * message, and that a valid input succeeds and displays the performance.
-     */
+    // Non-numeric input should show an error, and then a valid retry should still work.
     @Test
-    void testInvalidInputHandling() throws Exception{
+    void testInvalidInputHandling() throws Exception {
         mockView = new MockView("ab", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         setupEventAndPerformance();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("Invalid input. Please " +
-                "enter a number."));
-        assertFalse(mockView.performanceOutputs.isEmpty());
-        assertEquals(1, mockView.performanceOutputs.size());
-        assertTrue(mockView.performanceOutputs.get(0).contains("Concert"));
+        assertAll(
+                () -> assertTrue(
+                        mockView.errorMessages.contains("Invalid input. Please enter a number."),
+                        "A non-numeric performance ID should show the invalid input error."
+                ),
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "A later valid ID should still display a performance."
+                ),
+                () -> assertEquals(
+                        1,
+                        mockView.performanceOutputs.size(),
+                        "Exactly one performance should be displayed after the valid retry."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.get(0).contains("Concert"),
+                        "The displayed performance should belong to the expected event."
+                )
+        );
     }
 
-    /**
-     * Tests non-existent performance ID followed by a valid one.
-     * Verifies that the valid performance is applied and an appropriate
-     * error message regarding non-existent ID is shown.
-     */
+    // A non-existent performance ID should show an error, then a valid ID should succeed.
     @Test
     void testInvalidPerformanceIDThenValid() throws Exception {
         mockView = new MockView("10", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         setupEventAndPerformance();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("Invalid ID. Please try again."));
-        assertFalse(mockView.performanceOutputs.isEmpty());
-        assertEquals(1, mockView.performanceOutputs.size());
-        assertTrue(mockView.performanceOutputs.get(0).contains("Concert"));
+        assertAll(
+                () -> assertTrue(
+                        mockView.errorMessages.contains("Invalid ID. Please try again."),
+                        "An unknown performance ID should show the invalid ID error."
+                ),
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "A later valid ID should still display a performance."
+                ),
+                () -> assertEquals(
+                        1,
+                        mockView.performanceOutputs.size(),
+                        "Exactly one performance should be displayed after the valid retry."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.get(0).contains("Concert"),
+                        "The displayed performance should belong to the expected event."
+                )
+        );
     }
 
-    /**
-     * Tests handling of exceeding maximum number of invalid attempts.
-     * Verifies that the process of viewing performance finishes with an
-     * appropriate error.
-     */
+    // After too many invalid attempts, the use case should stop.
     @Test
     void shouldFailAfterManyAttempts() throws Exception {
-        mockView = new MockView("8", "9", "3", "4", "5", "6", "7", "8");
+        mockView = new MockView("8", "9", "3", "4", "5", "6", "7");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         setupEventAndPerformance();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("Too many unsuccessful " +
-                "attempts were made"));
+        assertAll(
+                () -> assertTrue(
+                        mockView.errorMessages.contains("Too many unsuccessful attempts were made"),
+                        "The system should stop after too many unsuccessful attempts."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.isEmpty(),
+                        "No performance should be displayed when the process ends in failure."
+                )
+        );
     }
 
-    /**
-     * Tests handling of an empty input for performance ID.
-     * Verifies that the process is done as for invalid input and
-     * appropriate error message is shown.
-     */
+    // Empty input is handled the same way as other invalid input.
     @Test
     void emptyInputShouldBeAsInvalid() throws Exception {
         mockView = new MockView("", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         setupEventAndPerformance();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.stream().anyMatch(message -> message.contains("Invalid input")));
-        assertFalse(mockView.performanceOutputs.isEmpty());
-        assertEquals(1, mockView.performanceOutputs.size());
-        assertTrue(mockView.performanceOutputs.get(0).contains("Concert"));
+        assertAll(
+                () -> assertTrue(
+                        mockView.errorMessages.stream().anyMatch(message -> message.contains("Invalid input")),
+                        "Empty input should be treated as invalid input."
+                ),
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "After the valid retry, one performance should be displayed."
+                ),
+                () -> assertEquals(
+                        1,
+                        mockView.performanceOutputs.size(),
+                        "Exactly one performance should be displayed after the valid retry."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.get(0).contains("Concert"),
+                        "The displayed performance should belong to the expected event."
+                )
+        );
     }
 
-    /**
-     * Tests full successful display scenario with a few invalid and
-     * non-existent input attempts.
-     * Verifies that the process does not stop at the invalid input and
-     * performance and event details are added, as well as ratings and reviews.
-     */
+    // The seventh attempt is still allowed by the current implementation.
+    @Test
+    void shouldSucceedWhenSeventhAttemptIsValid() throws Exception {
+        mockView = new MockView("a", "9", "", "51", "100", "200", "1");
+        controller = new EventPerformanceController(mockView, paymentSystem);
+
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
+        setupEventAndPerformance();
+
+        controller.viewPerformance();
+
+        assertAll(
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "The seventh input should still be accepted if it is valid."
+                ),
+                () -> assertEquals(
+                        1,
+                        mockView.performanceOutputs.size(),
+                        "Exactly one performance should be displayed after a valid seventh attempt."
+                ),
+                () -> assertFalse(
+                        mockView.errorMessages.contains("Too many unsuccessful attempts were made"),
+                        "The system should not fail when the seventh attempt is valid."
+                )
+        );
+    }
+
+    // After some invalid attempts, the system should still display all expected details.
     @Test
     void displaysFullDetailsSuccessfullyAfterInvalidInputs() throws Exception {
         mockView = new MockView("a", "9", "51", "1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         setupEventAndPerformance();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("Invalid input. Please " +
-                "enter a number."));
-        assertTrue(mockView.errorMessages.contains("Invalid ID. Please try again."));
-
-        // check presence of performance details
-        assertFalse(mockView.performanceOutputs.isEmpty());
-        assertEquals(1, mockView.performanceOutputs.size());
-        assertTrue(mockView.performanceOutputs.get(0).contains("Concert"));
-
-        // check presence of event details header
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains(
-                "Event Details")));
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains(
-                "Event ID:")));
-
-        // check average rating ((5+4)/2=4.50)
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("4.50")));
-
-        // check reviews
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("Amazing")));
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("Coool")));
+        assertAll(
+                () -> assertTrue(
+                        mockView.errorMessages.contains("Invalid input. Please enter a number."),
+                        "A non-numeric input should show the invalid input error."
+                ),
+                () -> assertTrue(
+                        mockView.errorMessages.contains("Invalid ID. Please try again."),
+                        "A non-existent ID should show the invalid ID error."
+                ),
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "A valid final input should display one performance."
+                ),
+                () -> assertEquals(
+                        1,
+                        mockView.performanceOutputs.size(),
+                        "Exactly one performance should be displayed."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.get(0).contains("Concert"),
+                        "The displayed performance should belong to the expected event."
+                ),
+                () -> assertTrue(
+                        mockView.successMessages.stream().anyMatch(message -> message.contains("Event Details")),
+                        "Event details header should be shown."
+                ),
+                () -> assertTrue(
+                        mockView.successMessages.stream().anyMatch(message -> message.contains("Event ID:")),
+                        "Event ID should be shown in the event details."
+                ),
+                () -> assertTrue(
+                        mockView.successMessages.stream().anyMatch(message -> message.contains("4.50")),
+                        "The event average rating should be shown correctly."
+                ),
+                () -> assertTrue(
+                        mockView.successMessages.stream().anyMatch(message -> message.contains("Amazing")),
+                        "Review comments should be shown."
+                ),
+                () -> assertTrue(
+                        mockView.successMessages.stream().anyMatch(message -> message.contains("Coool")),
+                        "All stored reviews should be shown."
+                )
+        );
     }
 
-    /**
-     * Tests handling when event is not found.
-     * Verifies that the process terminates with an appropriate error if
-     * event was not found.
-     */
+    // If the selected performance exists but its event is missing, an error should be shown.
     @Test
     void eventNotFoundShouldShowError() throws Exception {
         mockView = new MockView("1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
-        Event event = setupEventAndPerformance();
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
+        setupEventAndPerformance();
 
-        // remove event
-        event.getPerformances().clear();
         Field eventsField = EventPerformanceController.class.getDeclaredField("events");
         eventsField.setAccessible(true);
+        @SuppressWarnings("unchecked")
         Collection<Event> events = (Collection<Event>) eventsField.get(controller);
         events.clear();
 
         controller.viewPerformance();
 
-        assertTrue(mockView.errorMessages.contains("Associated event not found"));
+        assertTrue(
+                mockView.errorMessages.contains("Associated event not found"),
+                "The system should show an error if the performance exists but its event cannot be found."
+        );
     }
 
-    /**
-     * Tests handling of when no reviews were added to the performance.
-     * Verifies that the appropriate message that no reviews were found is
-     * displayed.
-     */
+    // If there are no reviews for the selected performance, the system should say so clearly.
     @Test
     void noReviewsShowNoReviewsMessage() throws Exception {
         mockView = new MockView("1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
 
-        EntertainmentProvider ep = new EntertainmentProvider("ep1@ed.ac.uk",
-                "epPass1", "OrgName", "BN005", "Alice EP", "description");
+        EntertainmentProvider ep = new EntertainmentProvider(
+                "ep1@ed.ac.uk",
+                "epPass1",
+                "OrgName",
+                "BN005",
+                "Alice EP",
+                "description"
+        );
 
         Event event = new Event(1, "Concert", EventType.Music, true);
         event.setOrganizer(ep);
 
-        Performance p = event.createPerformance(1L,
-                LocalDateTime.of(2026, 4, 10, 19, 0),
-                LocalDateTime.of(2026, 4, 10, 21, 0),
+        LocalDateTime start = LocalDateTime.now().plusDays(5).withHour(19).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end = start.plusHours(2);
+
+        Performance p = event.createPerformance(
+                1L,
+                start,
+                end,
                 List.of("Band A"),
                 "Main Hall",
                 100,
                 false,
                 false,
                 50,
-                15.0);
+                15.0
+        );
 
         controller.addEvent(event);
         controller.addPerformance(p);
 
         controller.viewPerformance();
 
-        assertTrue(mockView.successMessages.stream().anyMatch(message -> message.contains("No reviews were added to this event yet")));
+        assertTrue(
+                mockView.successMessages.stream()
+                        .anyMatch(message -> message.contains("No reviews were added to this event yet")),
+                "When there are no reviews, the system should clearly show that no reviews exist."
+        );
     }
 
-    /**
-     * Tests handling of viewing the details of cancelled performance.
-     * Verifies that cancelled performances are also displayable.
-     */
+    // Cancelled performances should still be viewable.
     @Test
     void cancelledPerformanceShouldBeDisplayable() throws Exception {
         mockView = new MockView("1");
         controller = new EventPerformanceController(mockView, paymentSystem);
 
-        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1",
-                "Student Name", 1234567));
+        setCurrentUser(new Student("student1@ed.ac.uk", "passwordS1", "Student Name", 1234567));
         Event event = setupEventAndPerformance();
 
         Performance p = event.getPerformances().iterator().next();
@@ -353,6 +436,15 @@ public class ViewPerformanceSystemTest {
 
         controller.viewPerformance();
 
-        assertTrue(mockView.performanceOutputs.get(0).contains("Concert"));
+        assertAll(
+                () -> assertFalse(
+                        mockView.performanceOutputs.isEmpty(),
+                        "A cancelled performance should still be displayed."
+                ),
+                () -> assertTrue(
+                        mockView.performanceOutputs.get(0).contains("Concert"),
+                        "The cancelled performance output should still contain the event title."
+                )
+        );
     }
 }

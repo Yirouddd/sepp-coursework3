@@ -174,4 +174,13 @@ public class Booking {
     public Performance getPerformance() {
         return performance;
     }
+
+    /**
+     * Returns the phone number of the student who made the booking.
+     *
+     * @return phone number of student
+     */
+    public int getStudentPhone() {
+        return student.getPhoneNumber();
+    }
 }

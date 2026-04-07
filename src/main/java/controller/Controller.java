@@ -16,7 +16,7 @@ public abstract class Controller {
     protected View view;
 
     /**
-     * Check if the current user is a guest (not logged in)
+     * Check if the current user is a guest (not logged in).
      *
      * @return true if the current user is a guest,
      *         false otherwise
@@ -26,7 +26,7 @@ public abstract class Controller {
     }
 
     /**
-     * Check if the current user is an admin staff
+     * Check if the current user is an admin staff.
      *
      * @return true if the current user is an admin staff,
      *            false otherwise
@@ -36,7 +36,7 @@ public abstract class Controller {
     }
 
     /**
-     * Check if the current user is a student
+     * Check if the current user is a student.
      *
      * @return true if the current user is a student,
      *         false otherwise
@@ -46,7 +46,7 @@ public abstract class Controller {
     }
 
     /**
-     * Check if the current user is an entertainment provider
+     * Check if the current user is an entertainment provider.
      *
      * @return true if the current user is an entertainment provider,
      *         false otherwise
@@ -56,9 +56,10 @@ public abstract class Controller {
     }
 
     /**
-     * Displays the menu, allows user to select an option
+     * Displays the menu, allows user to select an option.
      *
      * @param options the collection of menu options
+     * @param <T> type of the menu options
      * @return the index of the selected option in the list
      */
     protected <T> int selectFromMenu(Collection<T> options) {
@@ -90,10 +91,20 @@ public abstract class Controller {
         }
     }
 
+    /**
+     * Returns the currently logged in user.
+     *
+     * @return the current user or null if guest (not logged in)
+     */
     public User getCurrentUser () {
         return currentUser;
     }
 
+    /**
+     * Sets the current user.
+     *
+     * @param currentUser user to set as current
+     */
     public void setCurrentUser (User currentUser) {
         this.currentUser = currentUser;
     }

@@ -1,6 +1,5 @@
 package controller;
 
-import external.MockVerificationService;
 import external.VerificationService;
 import object.Event;
 import user.*;
@@ -10,7 +9,9 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- * Handles login, logout, EP registration, and student preference editing.
+ * Controller responsible for
+ * login, logout, EP registration, and student
+ * preference editing.
  */
 public class UserController extends Controller {
     public final String PREREGISTERED_USERS_FILE_PATH;
@@ -21,9 +22,10 @@ public class UserController extends Controller {
     /**
      * Constructs a UserController.
      *
-     * @param view UI view
-     * @param preregisteredUsersFilePath students file path
-     * @param preregisteredAdminFilePath admins file path
+     * @param view UI view for input/output
+     * @param preregisteredUsersFilePath file path of preregistered students
+     * @param preregisteredAdminFilePath file path of preregistered admins
+     * @param verificationService  service to verify entertainment providers
      */
     public UserController(View view,
                           VerificationService verificationService,
@@ -43,7 +45,7 @@ public class UserController extends Controller {
     }
 
     /**
-     * Logs a user in.
+     * Logs a user in by asking for email and password.
      */
     public void login() {
         while (true) {
@@ -68,7 +70,7 @@ public class UserController extends Controller {
     }
 
     /**
-     * Logs current user out.
+     * Logs the current user out.
      */
     public void logout() {
         currentUser = null;
@@ -76,7 +78,8 @@ public class UserController extends Controller {
     }
 
     /**
-     * Registers a new entertainment provider.
+     * Registers a new entertainment provider, verifying business number and
+     * ensuring that no duplicates exist.
      */
     public void registerEntertainmentProvider() {
         String email;
@@ -145,12 +148,13 @@ public class UserController extends Controller {
     }
 
     /**
-     * Checks whether an EP already exists.
+     * Checks whether an entertainment provider already exists
+     * with the given email, organisation name and business number.
      *
      * @param email email
      * @param orgName organisation name
      * @param businessNumber business number
-     * @return true if duplicate exists
+     * @return true if duplicate exists, false otherwise
      */
     private boolean EPAccountAlreadyExists(String email, String orgName, String businessNumber) {
         if (users.containsKey(email)) {
@@ -172,7 +176,7 @@ public class UserController extends Controller {
     }
 
     /**
-     * Lets a student edit preferences.
+     * Lets the current student to edit their preferences.
      */
     public void editPreferences() {
         if (!checkCurrentUserIsStudent()) {
@@ -241,7 +245,7 @@ public class UserController extends Controller {
     /**
      * Adds a user to the system.
      *
-     * @param user user
+     * @param user the user to add
      */
     private void addUser(User user) {
         if (user != null) {
@@ -252,6 +256,7 @@ public class UserController extends Controller {
     /**
      * Loads preregistered students and admins from files.
      *
+     * @throws FileNotFoundException if file paths are invalid
      */
     private void addPreregisteredUsers() throws FileNotFoundException {
         if (PREREGISTERED_USERS_FILE_PATH != null){
@@ -306,7 +311,7 @@ public class UserController extends Controller {
      * Finds the entertainment provider who owns a given event id.
      *
      * @param eventNumber event id
-     * @return EP owner or null
+     * @return the entertainment provider or null if not found
      */
     private EntertainmentProvider getEntertainmentProviderOwningEvent(long eventNumber){
         for (User user : users.values()) {
@@ -322,10 +327,20 @@ public class UserController extends Controller {
         return null;
     }
 
+    /**
+     * Returns all registered users.
+     *
+     * @return map : email -> User
+     */
     public Map<String, User> getUsers() {
         return users;
     }
 
+    /**
+     * Sets the user map.
+     *
+     * @param users map : email -> User
+     */
     public void setUsers(Map<String, User> users) {
         this.users = users;
     }

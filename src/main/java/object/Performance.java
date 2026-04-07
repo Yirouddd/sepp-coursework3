@@ -6,10 +6,10 @@ import enums.PerformanceStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Performance class represents a performance of an event.
+ * Represents a performance of an event with date and time, venue, bookings
+ * and reviews.
  */
 public class Performance {
     private long performanceId;
@@ -32,7 +32,19 @@ public class Performance {
     private PerformanceStatus performanceStatus;
 
     /**
-     * Constructs a performance.
+     * Constructs a performance with the specifies details.
+     *
+     * @param performanceId unique performance ID
+     * @param event associated event
+     * @param startDateTime start date time
+     * @param endDateTime end date time
+     * @param performersNames list of performers
+     * @param venueAddress venue address
+     * @param venueCapacity venue capacity
+     * @param venueIsOutdoor true if venue is outdoor
+     * @param venueIsAllowsSmoking true if venue allows smoking
+     * @param numTicketsTotal total tickets available for the performance
+     * @param ticketPrice price per ticket
      */
     public Performance(long performanceId,
                        Event event,
@@ -76,26 +88,26 @@ public class Performance {
     /**
      * Checks whether the event is ticketed.
      *
-     * @return true if ticketed
+     * @return true if the event is ticketed
      */
     public boolean checkIfEventIsTicketed() {
         return event != null && event.isTicketed();
     }
 
     /**
-     * Checks if enough tickets remain.
+     * Checks if enough tickets remain to purchase.
      *
-     * @param numTicketsToBuy requested tickets
-     * @return true if enough remain
+     * @param numTicketsToBuy number of requested tickets
+     * @return true if enough sufficient tickets remain
      */
     public boolean checkIfTicketsLeft(int numTicketsToBuy) {
         return (numTicketsTotal - numTicketsSold) >= numTicketsToBuy;
     }
 
     /**
-     * Final ticket price after sponsorship.
+     * Returns the final ticket price after applying sponsorship.
      *
-     * @return final price
+     * @return final ticket price
      */
     public double getFinalTicketPrice() {
         double finalPrice = ticketPrice - sponsoredAmount;
@@ -103,7 +115,7 @@ public class Performance {
     }
 
     /**
-     * Returns organiser email.
+     * Returns the organiser's email.
      *
      * @return organiser email
      */
@@ -112,16 +124,16 @@ public class Performance {
     }
 
     /**
-     * Returns event id.
+     * Returns the associated event ID.
      *
-     * @return event id
+     * @return event ID
      */
     public long getEventId() {
         return event.getEventID();
     }
 
     /**
-     * Returns event title.
+     * Returns the associated event title.
      *
      * @return event title
      */
@@ -130,19 +142,19 @@ public class Performance {
     }
 
     /**
-     * Checks whether performance has not happened yet.
+     * Checks whether the performance has not happened yet.
      *
-     * @return true if current time is before start
+     * @return true if the start time is in the future
      */
     public boolean checkHasNotHappenedYet() {
         return startDateTime.isAfter(LocalDateTime.now());
     }
 
     /**
-     * Checks if this performance belongs to an EP email.
+     * Checks whether this performance was created by the given EP.
      *
      * @param epEmail provider email
-     * @return true if same provider
+     * @return true if created by the provider
      */
     public boolean checkCreatedByEP(String epEmail) {
         return epEmail != null
@@ -152,9 +164,9 @@ public class Performance {
     }
 
     /**
-     * Checks if there are active bookings.
+     * Checks if there are any active bookings.
      *
-     * @return true if active booking exists
+     * @return true if at least one active booking exists
      */
     public boolean hasActiveBooking() {
         for (Booking b : bookings) {
@@ -166,9 +178,11 @@ public class Performance {
     }
 
     /**
-     * Adds sponsorship.
+     * Adds sponsorship to the performance.
      *
      * @param amount sponsorship amount
+     * @throws IllegalArgumentException if event is non-ticketed or amount is
+     * non-positive
      */
     public void sponsor(double amount) {
         if (!checkIfEventIsTicketed()) {
@@ -183,10 +197,12 @@ public class Performance {
     }
 
     /**
-     * Adds a review.
+     * Adds a review for the performance.
      *
      * @param rating rating from 1 to 5
-     * @param comment comment text
+     * @param comment review comment (can be null)
+     * @throws IllegalArgumentException if rating is less than 1 or is bigger
+     * than 5
      */
     public void review(int rating, String comment) {
         if (rating < 1 || rating > 5) {
@@ -198,9 +214,12 @@ public class Performance {
     }
 
     /**
-     * Adds a booking to this performance.
+     * Adds a booking to the performance.
      *
-     * @param b booking
+     * @param b booking to add
+     * @throws IllegalArgumentException if booking is null
+     * @throws IllegalStateException if performance is non-ticketed or not
+     * enough tickets left
      */
     public void addBooking(Booking b) {
         if (b == null) {
@@ -218,9 +237,9 @@ public class Performance {
     }
 
     /**
-     * Removes a booking from this performance.
+     * Removes a booking from the performance.
      *
-     * @param b booking
+     * @param b booking to remove
      */
     public void removeBooking(Booking b) {
         if (b != null && bookings.remove(b)) {
@@ -231,6 +250,11 @@ public class Performance {
         }
     }
 
+    /**
+     * Returns a string representation of the performance details.
+     *
+     * @return performance details string
+     */
     @Override
     public String toString() {
         StringBuilder details = new StringBuilder();
@@ -273,46 +297,91 @@ public class Performance {
         return details.toString();
     }
 
+    /**
+     * Returns the performance ID.
+     *
+     * @return performance ID
+     */
     public long getPerformanceId() {
         return performanceId;
     }
 
+    /**
+     * Returns the number of tickets left.
+     *
+     * @return tickets left
+     */
     public int getTicketsLeft() {
         return numTicketsTotal - numTicketsSold;
     }
 
+    /**
+     * Checks whether the performance is sponsored.
+     *
+     * @return true if sponsored
+     */
     public boolean isSponsored() {
         return isSponsored;
     }
 
+    /**
+     * Returns the performance status.
+     *
+     * @return status
+     */
     public PerformanceStatus getStatus() {
         return performanceStatus;
     }
 
+    /**
+     * Returns the sponsored amount applied.
+     *
+     * @return sponsored amount
+     */
     public double getSponsoredAmount() {
         return sponsoredAmount;
     }
 
+    /**
+     * Returns the performance start time.
+     *
+     * @return start time
+     */
     public LocalDateTime getStartDateTime() {
         return startDateTime;
     }
 
+    /**
+     * Returns the performance end time.
+     *
+     * @return end time
+     */
     public LocalDateTime getEndDateTime() {
         return endDateTime;
     }
 
+    /**
+     * Sets whether the performance is sponsored.
+     *
+     * @param sponsored  true if sponsored
+     */
     public void setSponsored(boolean sponsored) {
         this.isSponsored = sponsored;
     }
 
+    /**
+     * Sets the sponsored amount.
+     *
+     * @param sponsoredAmount amount to set
+     */
     public void setSponsoredAmount(double sponsoredAmount) {
         this.sponsoredAmount = sponsoredAmount;
     }
 
     /**
-     * Returns average rating for this performance.
+     * Returns average rating for the performance.
      *
-     * @return average rating
+     * @return average rating or 0.0 if no ratings exist
      */
     public double getAverageRating() {
         if (reviewsRatings.isEmpty()) {
@@ -326,26 +395,56 @@ public class Performance {
         return (double) total / reviewsRatings.size();
     }
 
+    /**
+     * Returns the list of ratings for the performance.
+     *
+     * @return copy of ratings
+     */
     public Collection<Integer> getReviewsRatings() {
         return new ArrayList<>(reviewsRatings);
     }
 
+    /**
+     * Returns the list of review comments for the performance.
+     *
+     * @return copy of comments
+     */
     public Collection<String> getReviewsComments() {
         return new ArrayList<>(reviewsComments);
     }
 
+    /**
+     * Returns the ticket price.
+     *
+     * @return ticket price
+     */
     public double getTicketPrice() {
         return ticketPrice;
     }
 
+    /**
+     * Returns the associated event.
+     *
+     * @return event
+     */
     public Event getEvent() {
         return event;
     }
 
+    /**
+     * Returns the bookings of the performance.
+     *
+     * @return copy of bookings
+     */
     public Collection<Booking> getBookings() {
         return new ArrayList<>(bookings);
     }
 
+    /**
+     * Returns the venue address.
+     *
+     * @return venue address
+     */
     public String getVenueAddress() {
         return venueAddress;
     }

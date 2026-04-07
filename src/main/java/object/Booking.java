@@ -6,7 +6,7 @@ import user.Student;
 import java.time.LocalDateTime;
 
 /**
- * Booking class represents a student with a bookingNumber, numTickets, amountPaid, bookingDateTime and status;
+ * Represents a booking made by a student for a performance.
  */
 public class Booking {
     private long bookingNumber;
@@ -21,10 +21,12 @@ public class Booking {
     /**
      * Constructs a booking.
      *
-     * @param student student who made the booking
-     * @param performance performance booked
-     * @param numTickets number of tickets
-     * @param amountPaid total amount paid
+     * @param student         the student making the booking
+     * @param performance     the performance being booked
+     * @param bookingNumber   unique booking ID
+     * @param numTickets      number of tickets booked
+     * @param amountPaid      total amount paid
+     * @param bookingDateTime date and time of booking
      */
     public Booking(Student student, Performance performance, long bookingNumber, int numTickets, double amountPaid, LocalDateTime bookingDateTime) {
         this.student = student;
@@ -36,21 +38,21 @@ public class Booking {
     }
 
     /**
-     * Marks booking as canceled by student.
+     * Marks the booking as canceled by the student.
      */
     public void cancelByStudent() {
         status = BookingStatus.CANCELLEDBYSTUDENT;
     }
 
     /**
-     * Marks booking as payment failed.
+     * Marks the booking as failed due to payment failure.
      */
     public void cancelPaymentFailed() {
         status = BookingStatus.PAYMENTFAILED;
     }
 
     /**
-     * Marks booking as cancelled by provider.
+     * Marks the booking as cancelled by the provider.
      */
     public void cancelByProvider() {
         status = BookingStatus.CANCELLEDBYPROVIDER;
@@ -58,10 +60,10 @@ public class Booking {
 
 
     /**
-     * Checks whether the booking belongs to the given student email.
+     * Checks whether the booking belongs to a student with given student email.
      *
      * @param email student email
-     * @return true if booking belongs to the student
+     * @return true if the booking belongs to the student
      */
     public boolean checkBookedByStudent(String email) {
         return student != null && student.getEmail().equalsIgnoreCase(email);
@@ -70,16 +72,17 @@ public class Booking {
     /**
      * Returns a string containing student details.
      *
-     * @return student details string
+     * @return student details as "Name | Email | PhoneNumber"
      */
     public String getStudentDetails() {
         return student.getName() + " | " + student.getEmail() + " | " + student.getPhoneNumber();
     }
 
     /**
-     * Generates a booking record string.
+     * Generates a full booking record string with performance ID, event,
+     * number of tickets purchased, amount paid, student and booking status.
      *
-     * @return booking record
+     * @return booking record string
      */
     public String generateBookingRecord() {
         return "Booking #" + bookingNumber
@@ -92,16 +95,16 @@ public class Booking {
     }
 
     /**
-     * Gets the unique booking number.
+     * Returns the unique booking number.
      *
-     * @return the booking number
+     * @return booking number
      */
     public long getBookingNumber() {
         return bookingNumber;
     }
 
     /**
-     * Gets the number of tickets in this booking.
+     * Returns the number of tickets in this booking.
      *
      * @return the number of booked tickets
      */
@@ -110,7 +113,7 @@ public class Booking {
     }
 
     /**
-     * Gets the email address of the student who made the booking.
+     * Returns the email address of the student who made the booking.
      *
      * @return the student's email address
      */
@@ -119,43 +122,43 @@ public class Booking {
     }
 
     /**
-     * Gets the total transaction amount paid for this booking.
+     * Returns the total amount paid for this booking.
      *
-     * @return the amount paid
+     * @return amount paid
      */
     public double getTransactionAmount() {
         return amountPaid;
     }
 
     /**
-     * Gets the current status of the booking.
+     * Returns the current status of the booking.
      *
-     * @return the booking status
+     * @return booking status
      */
     public BookingStatus getBookingStatus() {
         return status;
     }
 
     /**
-     * Gets the date and time when the booking was made.
+     * Returns the date and time when the booking was made.
      *
-     * @return the booking date and time
+     * @return booking date and time
      */
     public LocalDateTime getBookingDateTime() {
         return bookingDateTime;
     }
 
     /**
-     * Gets the Student's phone number
+     * Returns the phone number of the student who made the booking.
      *
-     * @return Phone number of student
+     * @return phone number of student
      */
     public int getStudentPhoneNumber() {
         return student.getPhoneNumber();
     }
 
     /**
-     * Gets the Student who made this booking
+     * Returns the student who made this booking.
      *
      * @return student
      */
@@ -163,10 +166,20 @@ public class Booking {
         return student;
     }
 
+    /**
+     * Returns the performance associated with this booking.
+     *
+     * @return performance
+     */
     public Performance getPerformance() {
         return performance;
     }
 
+    /**
+     * Returns the phone number of the student who made the booking.
+     *
+     * @return phone number of student
+     */
     public int getStudentPhone() {
         return student.getPhoneNumber();
     }

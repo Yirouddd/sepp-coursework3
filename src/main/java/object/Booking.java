@@ -36,6 +36,7 @@ public class Booking {
         this.bookingNumber = bookingNumber;
         this.bookingDateTime = bookingDateTime;
         status = BookingStatus.ACTIVE;
+        this.bookingDateTime = bookingDateTime;
     }
 
     /**
